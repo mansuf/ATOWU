@@ -61,7 +61,7 @@ if exist "%temp%\ATOWU\ATOWU_run_in_background" (
 echo [%time%] [Status:Failed_to_Start] ATOWU is failed to start, maybe not running as Administrator ?
 echo [%time%] [Status:Failed_to_Start] ATOWU is failed to start, maybe not running as Administrator ? >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log 
 @echo result = MsgBox ("Please Run as Administrator, to Start the Process", _  > %temp%\thanks.vbs
-@echo   vbOkOnly+vbOkOnly, "Error") >> %temp%\thanks.vbs
+@echo   vbOkOnly+vbOkOnly+vbCritical, "Error") >> %temp%\thanks.vbs
 @echo Dim message >> %temp%\thanks.vbs
 if exist "%temp%\thanks.vbs" goto START_ERROR_MESSAGE_ATOWUENGINE
 goto error
