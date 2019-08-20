@@ -7,6 +7,6 @@ ATOWU (AutoTurnOffWindowsUpdate) is a batch-script for shutting down Windows Upd
 <h2>How it Work ?</h2>
 First, ATOWU Scanning the Services<br>if ATOWU Detect a Windows Services is running<br>ATOWU will kill it instantly
 
-<h2>WARNING</h2>
+<h2 style="color:Red;">WARNING</h2>
 ATOWU can Trigger Antimalware Service Executable to a Massive CPU Usage (10%-20%+)
 <br> (o) Use ATOWU Lite Instead for Gaming, Mining, etc
