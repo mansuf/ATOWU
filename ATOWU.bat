@@ -5,6 +5,7 @@
 ::Update Engine v2.16p2 Removed Message "Grabbing Status Service"
 ::Update Engine v2.16p3 Pre-Released App Causing Microsoft Stop Services and taskkill command is Disabled (if the Services stopped Microsoft Office Cannot Run)
 ::Update Engine v2.17p1b Added Debug mode & improved Engine
+::[ON PROGRESS]Update Engine v2.19p1b Improved Engine
 
 ::README
 ::ATOWU Works in Windows 7 (TESTED), Windows 8 (UNTESTED), Windows 10 (TESTED)
@@ -185,8 +186,25 @@ if %SERVICE_IS_ON_WORK%==NOT_FOUND (
 )
 
 :BITS_PROCESS
+set RESULT_ATOWU_BITS=NOT_FOUND
 sc config bits start= disabled
-net stop bits
+for /f "tokens=7" %%b in ('net stop bits ^| findstr service') do set RESULT_ATOWU_BITS=%%b
+if %RESULT_ATOWU_BITS%==Please (
+    echo [%time%] [Status:QUEUED] [Service] Background Windows Update is Starting or Stopping... 
+    echo [%time%] [Status:QUEUED] [Service] Background Windows Update is Starting or Stopping... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
+    goto CHECK_TWICE_BITS
+) else (
+    goto BITS_PRINT_MESSAGE_AND_OUT
+)
+
+:CHECK_TWICE_BITS
+for /f "tokens=7" %%b in ('net stop wuauserv ^| findstr service') do set RESULT_ATOWU_BITS=%%b
+if %RESULT_ATOWU_BITS%==Please (
+    goto CHECK_TWICE_BITS
+) else (
+    goto BITS_PRINT_MESSAGE_AND_OUT
+)
+
 for /f "tokens=4" %%b in ('sc query bits ^| findstr STATE') do set STATUS_BITS_IN_ENGINE=%%b
 if %STATUS_BITS_IN_ENGINE%==RUNNING goto BITS_ERROR
 if %STATUS_BITS_IN_ENGINE%==STOPPED goto BITS_PRINT_MESSAGE_AND_OUT
