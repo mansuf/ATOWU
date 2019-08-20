@@ -280,7 +280,24 @@ if %SERVICE_IS_ON_WORK%==NOT_FOUND (
 
 :WUAUSERV_PROCESS
 sc config wuauserv start= disabled
-net stop wuauserv
+set RESULT_ATOWU_WINDOWS_UPDATE=NOT_FOUND
+for /f "tokens=7" %%b in ('net stop wuauserv ^| findstr service') do set RESULT_ATOWU_WINDOWS_UPDATE=%%b
+if %RESULT_ATOWU_WINDOWS_UPDATE%==Please (
+    echo [%time%] [Status:QUEUED] [Service] Windows Update is Starting or Stopping... 
+    echo [%time%] [Status:QUEUED] [Service] Windows Update is Starting or Stopping... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
+    goto CHECK_TWICE_WUAUSERV
+) else (
+    goto WUAUSERV_PRINT_MESSAGE_AND_OUT
+)
+
+:CHECK_TWICE_WUAUSERV
+for /f "tokens=7" %%b in ('net stop wuauserv ^| findstr service') do set RESULT_ATOWU_WINDOWS_UPDATE=%%b
+if %RESULT_ATOWU_WINDOWS_UPDATE%==Please (
+    goto CHECK_TWICE_WUAUSERV
+) else (
+    goto WUAUSERV_PRINT_MESSAGE_AND_OUT
+)
+
 for /f "tokens=4" %%b in ('sc query wuauserv ^| findstr STATE') do set STATUS_WUAUSERV_IN_ENGINE=%%b
 if %STATUS_WUAUSERV_IN_ENGINE%==RUNNING goto WUAUSERV_ERROR
 if %STATUS_WUAUSERV_IN_ENGINE%==STOPPED goto WUAUSERV_PRINT_MESSAGE_AND_OUT
