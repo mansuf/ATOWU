@@ -187,14 +187,14 @@ if %SERVICE_IS_ON_WORK%==NOT_FOUND (
 
 :BITS_PROCESS
 set RESULT_ATOWU_BITS=NOT_FOUND
-sc config bits start= disabled
+sc config bits start= disabled>NUL
 for /f "tokens=7" %%b in ('net stop bits ^| findstr service') do set RESULT_ATOWU_BITS=%%b
 if %RESULT_ATOWU_BITS%==Please (
     echo [%time%] [Status:QUEUED] [Service] Background Windows Update is Starting or Stopping... 
     echo [%time%] [Status:QUEUED] [Service] Background Windows Update is Starting or Stopping... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
     goto CHECK_TWICE_BITS
 ) else (
-    goto BITS_PRINT_MESSAGE_AND_OUT
+    goto CHECK_SERVICE_BITS
 )
 
 :CHECK_TWICE_BITS
@@ -202,9 +202,10 @@ for /f "tokens=7" %%b in ('net stop wuauserv ^| findstr service') do set RESULT_
 if %RESULT_ATOWU_BITS%==Please (
     goto CHECK_TWICE_BITS
 ) else (
-    goto BITS_PRINT_MESSAGE_AND_OUT
+    goto CHECK_SERVICE_BITS
 )
 
+:CHECK_SERVICE_BITS
 for /f "tokens=4" %%b in ('sc query bits ^| findstr STATE') do set STATUS_BITS_IN_ENGINE=%%b
 if %STATUS_BITS_IN_ENGINE%==RUNNING goto BITS_ERROR
 if %STATUS_BITS_IN_ENGINE%==STOPPED goto BITS_PRINT_MESSAGE_AND_OUT
@@ -279,7 +280,7 @@ if %SERVICE_IS_ON_WORK%==NOT_FOUND (
 )
 
 :WUAUSERV_PROCESS
-sc config wuauserv start= disabled
+sc config wuauserv start= disabled>NUL
 set RESULT_ATOWU_WINDOWS_UPDATE=NOT_FOUND
 for /f "tokens=7" %%b in ('net stop wuauserv ^| findstr service') do set RESULT_ATOWU_WINDOWS_UPDATE=%%b
 if %RESULT_ATOWU_WINDOWS_UPDATE%==Please (
@@ -287,7 +288,7 @@ if %RESULT_ATOWU_WINDOWS_UPDATE%==Please (
     echo [%time%] [Status:QUEUED] [Service] Windows Update is Starting or Stopping... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
     goto CHECK_TWICE_WUAUSERV
 ) else (
-    goto WUAUSERV_PRINT_MESSAGE_AND_OUT
+    goto CHECK_SERVICE_WUAUSERV
 )
 
 :CHECK_TWICE_WUAUSERV
@@ -295,9 +296,10 @@ for /f "tokens=7" %%b in ('net stop wuauserv ^| findstr service') do set RESULT_
 if %RESULT_ATOWU_WINDOWS_UPDATE%==Please (
     goto CHECK_TWICE_WUAUSERV
 ) else (
-    goto WUAUSERV_PRINT_MESSAGE_AND_OUT
+    goto CHECK_SERVICE_WUAUSERV
 )
 
+:CHECK_SERVICE_WUAUSERV
 for /f "tokens=4" %%b in ('sc query wuauserv ^| findstr STATE') do set STATUS_WUAUSERV_IN_ENGINE=%%b
 if %STATUS_WUAUSERV_IN_ENGINE%==RUNNING goto WUAUSERV_ERROR
 if %STATUS_WUAUSERV_IN_ENGINE%==STOPPED goto WUAUSERV_PRINT_MESSAGE_AND_OUT
