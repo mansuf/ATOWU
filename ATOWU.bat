@@ -375,8 +375,26 @@ if %SERVICE_IS_ON_WORK%==NOT_FOUND (
 )
 
 :DOSVC_PROCESS
-sc config DoSvc start= disabled
-net stop DoSvc
+sc config DoSvc start= disabled>NUL
+set RESULT_ATOWU_DOSVC=NOT_FOUND
+for /f "tokens=7" %%b in ('net stop DoSvc ^| findstr service') do set RESULT_ATOWU_DOSVC=%%b
+if %RESULT_ATOWU_DOSVC%==Please (
+    echo [%time%] [Status:QUEUED] [Service] Delivery Optimization is Starting or Stopping... 
+    echo [%time%] [Status:QUEUED] [Service] Delivery Optimization is Starting or Stopping... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
+    goto CHECK_TWICE_DOSVC
+) else (
+    goto CHECK_SERVICE_DOSVC
+)
+
+:CHECK_TWICE_DOSVC
+for /f "tokens=7" %%b in ('net stop DoSvc ^| findstr service') do set RESULT_ATOWU_DOSVC=%%b
+if %RESULT_ATOWU_DOSVC%==Please (
+    goto CHECK_TWICE_DOSVC
+) else (
+    goto CHECK_SERVICE_DOSVC
+)
+
+:CHECK_SERVICE_DOSVC
 for /f "tokens=4" %%b in ('sc query DoSvc ^| findstr STATE') do set STATUS_DOSVC_IN_ENGINE=%%b
 if %STATUS_DOSVC_IN_ENGINE%==RUNNING goto DOSVC_ERROR
 if %STATUS_DOSVC_IN_ENGINE%==STOPPED goto DOSVC_PRINT_MESSAGE_AND_OUT
