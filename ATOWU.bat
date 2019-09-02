@@ -1,11 +1,11 @@
-::ATOWU v1.0-engine_v2.18p1
+::ATOWU v1.0-engine_v2.19p1
 
 ::ChangeLog
 ::Update Engine v2.16p1 Improved Engine and Logs
 ::Update Engine v2.16p2 Removed Message "Grabbing Status Service"
 ::Update Engine v2.16p3 Pre-Released App Causing Microsoft Stop Services and taskkill command is Disabled (if the Services stopped Microsoft Office Cannot Run)
 ::Update Engine v2.17p1b Added Debug mode & improved Engine
-::[ON PROGRESS]Update Engine v2.19p1b Improved Engine
+::Update Engine v2.19p1b Improved Engine
 
 ::README
 ::ATOWU Works in Windows 7 (TESTED), Windows 8 (UNTESTED), Windows 10 (TESTED)
@@ -87,7 +87,7 @@ echo [%time%] [Status:Running]%DEBUGMESSAGE% SUCCESS!! ATOWU is Running, time st
 goto Engine_FOR_FIRST_STARTUP
 
 :Engine_FOR_FIRST_STARTUP
-@title ATOWU v1.0-engine_v2.18p1%DEBUGMESSAGE%
+@title ATOWU v1.0-engine_v2.19p1b%DEBUGMESSAGE%
 set PIDWINDOWSDEFENDUPDATE=NOT_FOUND
 set PIDOFFICEC2R=NOT_FOUND
 set STATUSCLICKTORUNSVC=NOT_FOUND
@@ -162,32 +162,12 @@ if %STATUSBITS%==STOPPED goto WUAUSERV_SERVICE
 :PROCESS_BITS_SERVICE
 echo [%time%] [Status:FOUND!!!] [Service]%DEBUGMESSAGE% Background Windows Update is Running, trying to shutting down...
 echo [%time%] [Status:FOUND!!!] [Service]%DEBUGMESSAGE% Background Windows Update is Running, trying to shutting down... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
-goto CHECK_SERVICE_IS_ON_WORK_BITS
-
-::If Net Command is being used, ATOWU will hold until Net Command is Unused
-:CHECK_SERVICE_IS_ON_WORK_BITS
-set SERVICE_IS_ON_WORK=NOT_FOUND
-for /f "tokens=2" %%b in ('tasklist ^| findstr net.exe') do set SERVICE_IS_ON_WORK=%%b
-if %SERVICE_IS_ON_WORK%==NOT_FOUND (
-    goto BITS_PROCESS
-) else (
-    echo [%time%] [Status:Holded] [Service] Net Command is being used, Please Wait...
-    echo [%time%] [Status:Holded] [Service] Net Command is being used, Please Wait... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log 
-    goto CHECK_SERVICE_IS_ON_WORK_BITS_2
-)
-
-:CHECK_SERVICE_IS_ON_WORK_BITS_2
-set SERVICE_IS_ON_WORK=NOT_FOUND
-for /f "tokens=2" %%b in ('tasklist ^| findstr net.exe') do set SERVICE_IS_ON_WORK=%%b
-if %SERVICE_IS_ON_WORK%==NOT_FOUND (
-    goto BITS_PROCESS
-) else (
-    goto CHECK_SERVICE_IS_ON_WORK_BITS_2
-)
+goto BITS_PROCESS
 
 :BITS_PROCESS
 set RESULT_ATOWU_BITS=NOT_FOUND
 sc config bits start= disabled>NUL
+::Added Queued Feature, if Services is starting or stopping ATOWU will hold until its done
 for /f "tokens=7" %%b in ('net stop bits ^| findstr service') do set RESULT_ATOWU_BITS=%%b
 if %RESULT_ATOWU_BITS%==Please (
     echo [%time%] [Status:QUEUED] [Service] Background Windows Update is Starting or Stopping... 
@@ -257,27 +237,7 @@ if %STATUSWUAUSERV%==RUNNING goto PROCESS_WUAUSERV_SERVICE
 :PROCESS_WUAUSERV_SERVICE
 echo [%time%] [Status:FOUND!!!] [Service]%DEBUGMESSAGE% Windows Update is Running, trying to shutting down...
 echo [%time%] [Status:FOUND!!!] [Service]%DEBUGMESSAGE% Windows Update is Running, trying to shutting down... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
-goto CHECK_SERVICE_IS_ON_WORK_WUAUSERV
-
-:CHECK_SERVICE_IS_ON_WORK_WUAUSERV
-set SERVICE_IS_ON_WORK=NOT_FOUND
-for /f "tokens=2" %%b in ('tasklist ^| findstr net.exe') do set SERVICE_IS_ON_WORK=%%b
-if %SERVICE_IS_ON_WORK%==NOT_FOUND (
-    goto WUAUSERV_PROCESS
-) else (
-    echo [%time%] [Status:Holded] [Service] Net Command is being used, Please Wait...
-    echo [%time%] [Status:Holded] [Service] Net Command is being used, Please Wait... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log 
-    goto CHECK_SERVICE_IS_ON_WORK_WUAUSERV_2
-)
-
-:CHECK_SERVICE_IS_ON_WORK_WUAUSERV_2
-set SERVICE_IS_ON_WORK=NOT_FOUND
-for /f "tokens=2" %%b in ('tasklist ^| findstr net.exe') do set SERVICE_IS_ON_WORK=%%b
-if %SERVICE_IS_ON_WORK%==NOT_FOUND (
-    goto WUAUSERV_PROCESS
-) else (
-    goto CHECK_SERVICE_IS_ON_WORK_WUAUSERV_2
-)
+goto WUAUSERV_PROCESS
 
 :WUAUSERV_PROCESS
 sc config wuauserv start= disabled>NUL
@@ -352,27 +312,7 @@ if %STATUSDOSVC%==RUNNING goto PROCESS_DOSVC_SERVICE
 :PROCESS_DOSVC_SERVICE
 echo [%time%] [Status:FOUND!!!] [Service]%DEBUGMESSAGE% Delivery Optimization is Running, trying to shutting down...
 echo [%time%] [Status:FOUND!!!] [Service]%DEBUGMESSAGE% Delivery Optimization is Running, trying to shutting down... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
-goto CHECK_SERVICE_IS_ON_WORK_DOSVC
-
-:CHECK_SERVICE_IS_ON_WORK_DOSVC
-set SERVICE_IS_ON_WORK=NOT_FOUND
-for /f "tokens=2" %%b in ('tasklist ^| findstr net.exe') do set SERVICE_IS_ON_WORK=%%b
-if %SERVICE_IS_ON_WORK%==NOT_FOUND (
-    goto DOSVC_PROCESS
-) else (
-    echo [%time%] [Status:Holded] [Service] Net Command is being used, Please Wait...
-    echo [%time%] [Status:Holded] [Service] Net Command is being used, Please Wait... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log 
-    goto CHECK_SERVICE_IS_ON_WORK_DOSVC_2
-)
-
-:CHECK_SERVICE_IS_ON_WORK_DOSVC_2
-set SERVICE_IS_ON_WORK=NOT_FOUND
-for /f "tokens=2" %%b in ('tasklist ^| findstr net.exe') do set SERVICE_IS_ON_WORK=%%b
-if %SERVICE_IS_ON_WORK%==NOT_FOUND (
-    goto DOSVC_PROCESS
-) else (
-    goto CHECK_SERVICE_IS_ON_WORK_DOSVC_2
-)
+goto DOSVC_PROCESS
 
 :DOSVC_PROCESS
 sc config DoSvc start= disabled>NUL
