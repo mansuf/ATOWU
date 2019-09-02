@@ -154,21 +154,44 @@ goto BITS_SERVICE
 
 :BITS_SERVICE
 if %DEBUGMODE%==1 (
-    echo BITS_SERVICE IF COMMAND
+    echo BITS_SERVICE Label
 )
 if %STATUSBITS%==RUNNING goto PROCESS_BITS_SERVICE
 if %STATUSBITS%==STOPPED goto WUAUSERV_SERVICE
 
 :PROCESS_BITS_SERVICE
+if %DEBUGMODE%==1 (
+    echo PROCESS_BITS_SERVICE Label
+    echo Result Variable STATUSBITS = %STATUSBITS%
+)
 echo [%time%] [Status:FOUND!!!] [Service]%DEBUGMESSAGE% Background Windows Update is Running, trying to shutting down...
 echo [%time%] [Status:FOUND!!!] [Service]%DEBUGMESSAGE% Background Windows Update is Running, trying to shutting down... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
 goto BITS_PROCESS
 
+:BITS_PROCESS_DEBUG
+echo BITS_PROCESS_DEBUG Label
+set BITS_PROCESS_DEBUG=NOT_FOUND
+echo Result Variable BITS_PROCESS_DEBUG (Before) = %BITS_PROCESS_DEBUG%
+for /f "tokens=4" %%b in ('sc query bits ^| findstr STATE') do set BITS_PROCESS_DEBUG=%%b
+echo Result Variable BITS_PROCESS_DEBUG (After) = %BITS_PROCESS_DEBUG%
+echo Result Variable RESULT_ATOWU_BITS = %RESULT_ATOWU_BITS%
+if %RESULT_ATOWU_BITS%==Please (
+    echo [%time%] [Status:QUEUED] [Service] Background Windows Update is Starting or Stopping... 
+    echo [%time%] [Status:QUEUED] [Service] Background Windows Update is Starting or Stopping... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
+    goto CHECK_TWICE_BITS
+) else (
+    goto CHECK_SERVICE_BITS
+)
+
 :BITS_PROCESS
+if %DEBUGMODE%==1 (
+    echo BITS_PROCESS Label
+)
 set RESULT_ATOWU_BITS=NOT_FOUND
 sc config bits start= disabled>NUL
 ::Added Queued Feature, if Services is starting or stopping ATOWU will hold until its done
 for /f "tokens=7" %%b in ('net stop bits ^| findstr service') do set RESULT_ATOWU_BITS=%%b
+if %DEBUGMODE%==1 goto BITS_PROCESS_DEBUG
 if %RESULT_ATOWU_BITS%==Please (
     echo [%time%] [Status:QUEUED] [Service] Background Windows Update is Starting or Stopping... 
     echo [%time%] [Status:QUEUED] [Service] Background Windows Update is Starting or Stopping... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
@@ -178,7 +201,10 @@ if %RESULT_ATOWU_BITS%==Please (
 )
 
 :CHECK_TWICE_BITS
-for /f "tokens=7" %%b in ('net stop wuauserv ^| findstr service') do set RESULT_ATOWU_BITS=%%b
+if %DEBUGMODE%==1 (
+    echo CHECK_TWICE_BITS Label
+)
+for /f "tokens=7" %%b in ('net stop bits ^| findstr service') do set RESULT_ATOWU_BITS=%%b
 if %RESULT_ATOWU_BITS%==Please (
     goto CHECK_TWICE_BITS
 ) else (
@@ -187,42 +213,132 @@ if %RESULT_ATOWU_BITS%==Please (
 
 :CHECK_SERVICE_BITS
 for /f "tokens=4" %%b in ('sc query bits ^| findstr STATE') do set STATUS_BITS_IN_ENGINE=%%b
+if %DEBUGMODE%==1 (
+    echo CHECK_SERVICE_BITS Label
+    echo Result Variable STATUS_BITS_IN_ENGINE = %STATUS_BITS_IN_ENGINE%
+)
 if %STATUS_BITS_IN_ENGINE%==RUNNING goto BITS_ERROR
 if %STATUS_BITS_IN_ENGINE%==STOPPED goto BITS_PRINT_MESSAGE_AND_OUT
 
 :BITS_PRINT_MESSAGE_AND_OUT
+if %DEBUGMODE%==1 (
+    echo BITS_PRINT_MESSAGE_AND_OUT Label
+)
 echo [%time%] [Status:Success_Shutting_down] [Service]%DEBUGMESSAGE% Background Windows Update Successfully Shut down 
 echo [%time%] [Status:Success_Shutting_down] [Service]%DEBUGMESSAGE% Background Windows Update Successfully Shut down >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
 goto WUAUSERV_SERVICE
 
 :BITS_ERROR
+if %DEBUGMODE%==1 (
+    echo BITS_ERROR Label
+)
 echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% Background Windows Update Failed to Shut Down, trying again... (Attempt:1)
 echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% Background Windows Update Failed to Shut Down, trying again... (Attempt:1) >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
-sc config bits start= disabled
-net stop bits
-for /f "tokens=4" %%b in ('sc query bits ^| findstr STATE') do set STATUS_BITS_IN_ENGINE=%%b
+sc config bits start= disabled>NUL
+set RESULT_ATOWU_BITS=NOT_FOUND
+for /f "tokens=7" %%b in ('net stop bits ^| findstr service') do set RESULT_ATOWU_BITS=%%b
+if %RESULT_ATOWU_BITS%==Please (
+    echo [%time%] [Status:QUEUED] [Service] Background Windows Update is Starting or Stopping... 
+    echo [%time%] [Status:QUEUED] [Service] Background Windows Update is Starting or Stopping... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
+    goto CHECK_TWICE_BITS_ERROR_ATTEMPT_1
+) else (
+    goto CHECK_SERVICE_BITS_ERROR_ATTEMPT_1
+)
+
+:CHECK_TWICE_BITS_ERROR_ATTEMPT_1
+if %DEBUGMODE%==1 (
+    echo CHECK_TWICE_BITS_ERROR_ATTEMPT_1 Label
+)
+for /f "tokens=7" %%b in ('net stop bits ^| findstr service') do set RESULT_ATOWU_BITS=%%b
+if %RESULT_ATOWU_BITS%==Please (
+    goto CHECK_TWICE_BITS_ERROR_ATTEMPT_1
+) else (
+    goto CHECK_SERVICE_BITS_ERROR_ATTEMPT_1
+)
+
+:CHECK_SERVICE_BITS_ERROR_ATTEMPT_1
+if %DEBUGMODE%==1 (
+    echo Result Variable STATUS_BITS_IN_ENGINE = %STATUS_BITS_IN_ENGINE%
+)
 if %STATUS_BITS_IN_ENGINE%==RUNNING goto BITS_ERROR_ATTEMPT_2
 if %STATUS_BITS_IN_ENGINE%==STOPPED goto BITS_PRINT_MESSAGE_AND_OUT
 
 :BITS_ERROR_ATTEMPT_2
+if %DEBUGMODE%==1 (
+    echo BITS_ERROR_ATTEMPT_2 Label
+)
 echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% Background Windows Update Failed to Shut Down, trying again... (Attempt:2)
 echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% Background Windows Update Failed to Shut Down, trying again... (Attempt:2) >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
-sc config bits start= disabled
-net stop bits
+sc config bits start= disabled>NUL
+set RESULT_ATOWU_BITS=NOT_FOUND
+for /f "tokens=7" %%b in ('net stop bits ^| findstr service') do set RESULT_ATOWU_BITS=%%b
+if %RESULT_ATOWU_BITS%==Please (
+    echo [%time%] [Status:QUEUED] [Service] Background Windows Update is Starting or Stopping... 
+    echo [%time%] [Status:QUEUED] [Service] Background Windows Update is Starting or Stopping... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
+    goto CHECK_TWICE_BITS_ERROR_ATTEMPT_2
+) else (
+    goto CHECK_SERVICE_BITS_ERROR_ATTEMPT_2
+)
+
+:CHECK_TWICE_BITS_ERROR_ATTEMPT_2
+if %DEBUGMODE%==1 (
+    echo CHECK_TWICE_BITS_ERROR_ATTEMPT_2 Label
+)
+for /f "tokens=7" %%b in ('net stop bits ^| findstr service') do set RESULT_ATOWU_BITS=%%b
+if %RESULT_ATOWU_BITS%==Please (
+    goto CHECK_TWICE_BITS_ERROR_ATTEMPT_2
+) else (
+    goto CHECK_SERVICE_BITS_ERROR_ATTEMPT_2
+)
+
+:CHECK_SERVICE_BITS_ERROR_ATTEMPT_2
 for /f "tokens=4" %%b in ('sc query bits ^| findstr STATE') do set STATUS_BITS_IN_ENGINE=%%b
+if %DEBUGMODE%==1 (
+    echo Result Variable STATUS_BITS_IN_ENGINE = %STATUS_BITS_IN_ENGINE%
+)
 if %STATUS_BITS_IN_ENGINE%==RUNNING goto BITS_ERROR_ATTEMPT_3
 if %STATUS_BITS_IN_ENGINE%==STOPPED goto BITS_PRINT_MESSAGE_AND_OUT
 
 :BITS_ERROR_ATTEMPT_3
+if %DEBUGMODE%==1 (
+    echo BITS_ERROR_ATTEMPT_3 Label
+)
 echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% Background Windows Update Failed to Shut Down, trying again... (Attempt:3)
 echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% Background Windows Update Failed to Shut Down, trying again... (Attempt:3) >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
-sc config bits start= disabled
-net stop bits
+sc config bits start= disabled>NUL
+set RESULT_ATOWU_BITS=NOT_FOUND
+for /f "tokens=7" %%b in ('net stop bits ^| findstr service') do set RESULT_ATOWU_BITS=%%b
+if %RESULT_ATOWU_BITS%==Please (
+    echo [%time%] [Status:QUEUED] [Service] Background Windows Update is Starting or Stopping... 
+    echo [%time%] [Status:QUEUED] [Service] Background Windows Update is Starting or Stopping... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
+    goto CHECK_TWICE_BITS_ERROR_ATTEMPT_3
+) else (
+    goto CHECK_SERVICE_BITS_ERROR_ATTEMPT_3
+)
+
+:CHECK_TWICE_BITS_ERROR_ATTEMPT_3
+if %DEBUGMODE%==1 (
+    echo CHECK_TWICE_BITS_ERROR_ATTEMPT_3 Label
+)
+for /f "tokens=7" %%b in ('net stop bits ^| findstr service') do set RESULT_ATOWU_BITS=%%b
+if %RESULT_ATOWU_BITS%==Please (
+    goto CHECK_TWICE_BITS_ERROR_ATTEMPT_3
+) else (
+    goto CHECK_SERVICE_BITS_ERROR_ATTEMPT_3
+)
+
+:CHECK_SERVICE_BITS_ERROR_ATTEMPT_3
 for /f "tokens=4" %%b in ('sc query bits ^| findstr STATE') do set STATUS_BITS_IN_ENGINE=%%b
+if %DEBUGMODE%==1 (
+    echo Result Variable STATUS_BITS_IN_ENGINE = %STATUS_BITS_IN_ENGINE%
+)
 if %STATUS_BITS_IN_ENGINE%==RUNNING goto BITS_ERROR_LAST_ATTEMPT
 if %STATUS_BITS_IN_ENGINE%==STOPPED goto BITS_PRINT_MESSAGE_AND_OUT
 
 :BITS_ERROR_LAST_ATTEMPT
+if %DEBUGMODE%==1 (
+    echo BITS_ERROR_LAST_ATTEMPT Label
+)
 echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% too many Attempts to Shutting down Background Windows Update, Skip to next Task...
 echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% too many Attempts to Shutting down Background Windows Update, Skip to next Task... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
 goto WUAUSERV_SERVICE
