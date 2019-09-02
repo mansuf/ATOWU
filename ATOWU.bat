@@ -100,7 +100,6 @@ for /f "tokens=4" %%b in ('sc query wuauserv ^| findstr STATE') do set STATUSWUA
 for /f "tokens=4" %%b in ('sc query DoSvc ^| findstr STATE') do set STATUSDOSVC=%%b
 for /f "tokens=4" %%b in ('sc query ClickToRunSvc ^| findstr STATE') do set STATUSCLICKTORUNSVC=%%b
 for /f "tokens=2" %%b in ('tasklist ^| findstr MpCmdRun.exe') do set PIDWINDOWSDEFENDUPDATE=%%b
-rem for /f "tokens=2" %%b in ('tasklist ^| findstr OfficeClickToRun.exe') do set PIDOFFICEC2R=%%b
 if %STATUSBITS%==NOT_FOUND (
     echo [%time%] [Status:NOT_FOUND ?] [Service] Background Windows Update Service is Not Found, is it removed ? 
     echo [%time%] [Status:NOT_FOUND ?] [Service] Background Windows Update Service is Not Found, is it removed ? >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
@@ -115,11 +114,6 @@ if %STATUSDOSVC%==NOT_FOUND (
     echo [%time%] [Status:NOT_FOUND ?] [Service] Delivery Optimization Service is Not Found, is it removed ? 
     echo [%time%] [Status:NOT_FOUND ?] [Service] Delivery Optimization Service is Not Found, is it removed ? >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
     goto Engine
-)
-rem if %STATUSCLICKTORUNSVC%==NOT_FOUND (
-    rem echo [%time%] [Status:NOT_FOUND ?] [Service] Microsoft ClickToRun Service is Not Found, is it removed ? 
-    rem echo [%time%] [Status:NOT_FOUND ?] [Service] Microsoft ClickToRun Service is Not Found, is it removed ? >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
-    rem goto Engine
 )
 goto Engine
 
@@ -145,7 +139,6 @@ for /f "tokens=4" %%b in ('sc query wuauserv ^| findstr STATE') do set STATUSWUA
 for /f "tokens=4" %%b in ('sc query DoSvc ^| findstr STATE') do set STATUSDOSVC=%%b
 for /f "tokens=4" %%b in ('sc query ClickToRunSvc ^| findstr STATE') do set STATUSCLICKTORUNSVC=%%b
 for /f "tokens=2" %%b in ('tasklist ^| findstr MpCmdRun.exe') do set PIDWINDOWSDEFENDUPDATE=%%b
-rem for /f "tokens=2" %%b in ('tasklist ^| findstr OfficeClickToRun.exe') do set PIDOFFICEC2R=%%b
 goto BITS_SERVICE
 
 
@@ -538,5 +531,3 @@ echo [%time%] [Status:Failed_Shutting_down] [App]%DEBUGMESSAGE% too many Attempt
 echo [%time%] [Status:Failed_Shutting_down] [App]%DEBUGMESSAGE% too many Attempts to Shutting down Windows Defender Update, Skip to next Task... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
 goto Engine
 
-
-::--------------------------------------------------------------------END---LINE---SCRIPT---------------------------------------------------------------------------------
