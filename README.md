@@ -9,4 +9,5 @@ First, ATOWU Scanning the Services<br>if ATOWU Detect a Windows Services is runn
 
 <h2 style="color:Red;">WARNING</h2>
 ATOWU can Trigger Antimalware Service Executable to a Massive CPU Usage (10%-20%+)
-<br> (o) Use ATOWU Lite Instead for Gaming, Mining, etc
+<br>
+<del>(o) Use ATOWU Lite Instead for Gaming, Mining, etc</del>
