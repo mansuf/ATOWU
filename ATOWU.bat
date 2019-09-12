@@ -10,7 +10,7 @@
 ::README
 ::ATOWU Works in Windows 7 (TESTED), Windows 8 (UNTESTED), Windows 10 (TESTED)
 ::ATOWU can Run in Background or Foreground
-::ATOWU using 7%-11%+ CPU Because its Realtime Scanning Service and Tasklist 
+::ATOWU using 5%-15%+ CPU Because its Realtime Scanning Service and Tasklist 
 
 
 @echo off
@@ -34,15 +34,27 @@ echo ATOWU Start Date : %DATE_MODIFIED%
 echo ATOWU Start Date : %DATE_MODIFIED% >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
 echo [%time%] [Status:Preparing] Starting ATOWU...
 echo [%time%] [Status:Preparing] Starting ATOWU... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
+
+::Checking if Less Mode is On
+if exist "%temp%\ATOWU.Less-mode" (
+    set LESS_MODE=1
+    del /Q %temp%\ATOWU.Less-mode
+    echo [%time%] [Status:Less Mode Turned On] ATOWU Running in Less Mode
+    echo [%time%] [Status:Less Mode Turned On] ATOWU Running in Less Mode >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
+) else (
+    set LESS_MODE=0
+)
 ::Checking if Debug Mode is ON
 if exist "%temp%\ATOWU.DEBUG" (
     set DEBUGMODE=1
-    del %temp%\ATOWU.DEBUG
+    del /Q %temp%\ATOWU.DEBUG
     set DEBUGMESSAGE= "DEBUG_MODE" 
     set DEBUG_DIR_LOG=[DEBUG]
     echo [%time%] [Status:Debugging...] ATOWU Running in : Debug Mode 
     echo [%time%] [Status:Debugging...] ATOWU Running in : Debug Mode >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
     goto PREPARING_ATOWU
+) else (
+    set DEBUGMODE=0
 )
 sc config bits start= disabled>NUL
 if errorlevel 1 goto error
@@ -127,6 +139,7 @@ rem for /f "tokens=2" %%b in ('tasklist ^| findstr UnExistApp.exe') do set PID_U
 rem and you can see the result by typing "echo %PID_UNEXIST_APP%"
 ::This always repeat again and again... (unless you change the script :P )
 :Engine
+if %LESS_MODE%==1 goto Engine_Less_Mode
 set PIDWINDOWSDEFENDUPDATE=NOT_FOUND
 set PIDOFFICEC2R=NOT_FOUND
 set STATUSCLICKTORUNSVC=NOT_FOUND
@@ -141,6 +154,22 @@ for /f "tokens=4" %%b in ('sc query ClickToRunSvc ^| findstr STATE') do set STAT
 for /f "tokens=2" %%b in ('tasklist ^| findstr MpCmdRun.exe') do set PIDWINDOWSDEFENDUPDATE=%%b
 goto BITS_SERVICE
 
+:Engine_Less_Mode
+::Engine in Less Mode
+set PIDWINDOWSDEFENDUPDATE=NOT_FOUND
+set PIDOFFICEC2R=NOT_FOUND
+set STATUSCLICKTORUNSVC=NOT_FOUND
+set STATUSDOSVC=NOT_FOUND
+set STATUSBITS=NOT_FOUND
+set STATUSWUAUSERV=NOT_FOUND
+set SERVICE_IS_ON_WORK=NOT_FOUND
+for /f "tokens=4" %%b in ('sc query bits ^| findstr STATE') do set STATUSBITS=%%b
+for /f "tokens=4" %%b in ('sc query wuauserv ^| findstr STATE') do set STATUSWUAUSERV=%%b
+timeout 1 /nobreak>NUL
+for /f "tokens=4" %%b in ('sc query DoSvc ^| findstr STATE') do set STATUSDOSVC=%%b
+for /f "tokens=4" %%b in ('sc query ClickToRunSvc ^| findstr STATE') do set STATUSCLICKTORUNSVC=%%b
+timeout 1 /nobreak>NUL
+for /f "tokens=2" %%b in ('tasklist ^| findstr MpCmdRun.exe') do set PIDWINDOWSDEFENDUPDATE=%%b
 
 ::Process ATOWU Engine
 goto BITS_SERVICE
@@ -497,7 +526,10 @@ taskkill /PID %PIDWINDOWSDEFENDUPDATE% /f /T
 if errorlevel 1 goto WINDOWSDEFEND_UPDATE_KILLPROCESS_ATTEMPT_1
 echo [%time%] [Status:Success_Shutting_down] [App]%DEBUGMESSAGE% Windows Defender Update Successfully Shut down 
 echo [%time%] [Status:Success_Shutting_down] [App]%DEBUGMESSAGE% Windows Defender Update Successfully Shut down >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
-goto Engine
+if %LESS_MODE%==1 (
+    timeout 2 /nobreak>NUL
+    goto Engine_Less_Mode
+)
 
 :WINDOWSDEFEND_UPDATE_KILLPROCESS_ATTEMPT_1
 echo [%time%] [Status:Failed_Shutting_down] [App]%DEBUGMESSAGE% Windows Defender Update Failed to Shut Down, trying again... (Attempt:1)
@@ -506,7 +538,11 @@ taskkill /PID %PIDWINDOWSDEFENDUPDATE% /f /T
 if errorlevel 1 goto WINDOWSDEFEND_UPDATE_KILLPROCESS_ATTEMPT_2
 echo [%time%] [Status:Success_Shutting_down] [App]%DEBUGMESSAGE% Windows Defender Update Successfully Shut down 
 echo [%time%] [Status:Success_Shutting_down] [App]%DEBUGMESSAGE% Windows Defender Update Successfully Shut down >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
-goto Engine
+if %LESS_MODE%==1 (
+    timeout 2 /nobreak>NUL
+    goto Engine_Less_Mode
+)
+
 
 :WINDOWSDEFEND_UPDATE_KILLPROCESS_ATTEMPT_2
 echo [%time%] [Status:Failed_Shutting_down] [App]%DEBUGMESSAGE% Windows Defender Update Failed to Shut Down, trying again... (Attempt:2)
@@ -515,7 +551,11 @@ taskkill /PID %PIDWINDOWSDEFENDUPDATE% /f /T
 if errorlevel 1 goto WINDOWSDEFEND_UPDATE_KILLPROCESS_ATTEMPT_3
 echo [%time%] [Status:Success_Shutting_down] [App]%DEBUGMESSAGE% Windows Defender Update Successfully Shut down 
 echo [%time%] [Status:Success_Shutting_down] [App]%DEBUGMESSAGE% Windows Defender Update Successfully Shut down >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
-goto Engine
+if %LESS_MODE%==1 (
+    timeout 2 /nobreak>NUL
+    goto Engine_Less_Mode
+)
+
 
 :WINDOWSDEFEND_UPDATE_KILLPROCESS_ATTEMPT_3
 echo [%time%] [Status:Failed_Shutting_down] [App]%DEBUGMESSAGE% Windows Defender Update Failed to Shut Down, trying again... (Attempt:3)
@@ -524,10 +564,18 @@ taskkill /PID %PIDWINDOWSDEFENDUPDATE% /f /T
 if errorlevel 1 goto WINDOWSDEFEND_UPDATE_KILLPROCESS_LAST_ATTEMPT
 echo [%time%] [Status:Success_Shutting_down] [App]%DEBUGMESSAGE% Windows Defender Update Successfully Shut down 
 echo [%time%] [Status:Success_Shutting_down] [App]%DEBUGMESSAGE% Windows Defender Update Successfully Shut down >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
-goto Engine
+if %LESS_MODE%==1 (
+    timeout 2 /nobreak>NUL
+    goto Engine_Less_Mode
+)
+
 
 :WINDOWSDEFEND_UPDATE_KILLPROCESS_LAST_ATTEMPT
 echo [%time%] [Status:Failed_Shutting_down] [App]%DEBUGMESSAGE% too many Attempts to Shutting down Windows Defender Update, Skip to next Task...
 echo [%time%] [Status:Failed_Shutting_down] [App]%DEBUGMESSAGE% too many Attempts to Shutting down Windows Defender Update, Skip to next Task... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
-goto Engine
+if %LESS_MODE%==1 (
+    timeout 2 /nobreak>NUL
+    goto Engine_Less_Mode
+)
+
 
