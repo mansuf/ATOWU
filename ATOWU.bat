@@ -279,6 +279,7 @@ if %RESULT_ATOWU_BITS%==Please (
 )
 
 :CHECK_SERVICE_BITS_ERROR_ATTEMPT_1
+for /f "tokens=4" %%b in ('sc query bits ^| findstr STATE') do set STATUS_BITS_IN_ENGINE=%%b
 if %DEBUGMODE%==1 (
     echo Result Variable STATUS_BITS_IN_ENGINE = %STATUS_BITS_IN_ENGINE%
 )
@@ -367,20 +368,43 @@ goto WUAUSERV_SERVICE
 
 :WUAUSERV_SERVICE
 if %DEBUGMODE%==1 (
-    echo WUAUSERV_SERVICE IF COMMAND
+    echo WUAUSERV_SERVICE Label
 )
 if %STATUSWUAUSERV%==STOPPED goto DOSVC_SERVICE
 if %STATUSWUAUSERV%==RUNNING goto PROCESS_WUAUSERV_SERVICE
 
 :PROCESS_WUAUSERV_SERVICE
+if %DEBUGMODE%==1 (
+    echo PROCESS_WUAUSERV_SERVICE Label
+    echo Result Variable STATUSWUAUSERV = %STATUSWUAUSERV%
+)
 echo [%time%] [Status:FOUND!!!] [Service]%DEBUGMESSAGE% Windows Update is Running, trying to shutting down...
 echo [%time%] [Status:FOUND!!!] [Service]%DEBUGMESSAGE% Windows Update is Running, trying to shutting down... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
 goto WUAUSERV_PROCESS
 
+:WUAUSERV_PROCESS_DEBUG
+echo WUAUSERV_PROCESS_DEBUG Label
+set WUAUSERV_PROCESS_DEBUG=NOT_FOUND
+echo Result Variable WUAUSERV_PROCESS_DEBUG (Before) = %WUAUSERV_PROCESS_DEBUG%
+for /f "tokens=4" %%b in ('sc query WUAUSERV ^| findstr STATE') do set WUAUSERV_PROCESS_DEBUG=%%b
+echo Result Variable WUAUSERV_PROCESS_DEBUG (After) = %WUAUSERV_PROCESS_DEBUG%
+echo Result Variable RESULT_ATOWU_WINDOWS_UPDATE = %RESULT_ATOWU_WINDOWS_UPDATE%
+if %RESULT_ATOWU_WINDOWS_UPDATE%==Please (
+    echo [%time%] [Status:QUEUED] [Service] Windows Update is Starting or Stopping... 
+    echo [%time%] [Status:QUEUED] [Service] Windows Update is Starting or Stopping... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
+    goto CHECK_TWICE_WUAUSERV
+) else (
+    goto CHECK_SERVICE_WUAUSERV
+)
+
 :WUAUSERV_PROCESS
+if %DEBUGMODE%==1 (
+    echo WUAUSERV_PROCESS Label
+)
 sc config wuauserv start= disabled>NUL
 set RESULT_ATOWU_WINDOWS_UPDATE=NOT_FOUND
 for /f "tokens=7" %%b in ('net stop wuauserv ^| findstr service') do set RESULT_ATOWU_WINDOWS_UPDATE=%%b
+if %DEBUGMODE%==1 goto WUAUSERV_PROCESS_DEBUG
 if %RESULT_ATOWU_WINDOWS_UPDATE%==Please (
     echo [%time%] [Status:QUEUED] [Service] Windows Update is Starting or Stopping... 
     echo [%time%] [Status:QUEUED] [Service] Windows Update is Starting or Stopping... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
@@ -390,6 +414,9 @@ if %RESULT_ATOWU_WINDOWS_UPDATE%==Please (
 )
 
 :CHECK_TWICE_WUAUSERV
+if %DEBUGMODE%==1 (
+    echo CHECK_TWICE_WUAUSERV Label
+)
 for /f "tokens=7" %%b in ('net stop wuauserv ^| findstr service') do set RESULT_ATOWU_WINDOWS_UPDATE=%%b
 if %RESULT_ATOWU_WINDOWS_UPDATE%==Please (
     goto CHECK_TWICE_WUAUSERV
@@ -399,42 +426,132 @@ if %RESULT_ATOWU_WINDOWS_UPDATE%==Please (
 
 :CHECK_SERVICE_WUAUSERV
 for /f "tokens=4" %%b in ('sc query wuauserv ^| findstr STATE') do set STATUS_WUAUSERV_IN_ENGINE=%%b
+if %DEBUGMODE%==1 (
+    echo CHECK_SERVICE_WUAUSERV Label
+    echo Result Variable STATUS_WUAUSERV_IN_ENGINE = %STATUS_WUAUSERV_IN_ENGINE%
+)
 if %STATUS_WUAUSERV_IN_ENGINE%==RUNNING goto WUAUSERV_ERROR
 if %STATUS_WUAUSERV_IN_ENGINE%==STOPPED goto WUAUSERV_PRINT_MESSAGE_AND_OUT
 
 :WUAUSERV_PRINT_MESSAGE_AND_OUT
+if %DEBUGMODE%==1 (
+    echo WUAUSERV_PRINT_MESSAGE_AND_OUT Label
+)
 echo [%time%] [Status:Success_Shutting_down] [Service]%DEBUGMESSAGE% Windows Update Successfully Shut down 
 echo [%time%] [Status:Success_Shutting_down] [Service]%DEBUGMESSAGE% Windows Update Successfully Shut down >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
 goto DOSVC_SERVICE
 
 :WUAUSERV_ERROR
+if %DEBUGMODE%==1 (
+    echo WUAUSERV_ERROR Label
+)
 echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% Windows Update Failed to Shut Down, trying again... (Attempt:1)
 echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% Windows Update Failed to Shut Down, trying again... (Attempt:1) >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
-sc config wuauserv start= disabled
-net stop wuauserv
-for /f "tokens=4" %%b in ('sc query wuauserv ^| findstr STATE') do set STATUS_WUAUSERV_IN_ENGINE=%%b
+sc config wuauserv start= disabled>NUL
+for /f "tokens=7" %%b in ('net stop wuauserv ^| findstr service') do set RESULT_ATOWU_WINDOWS_UPDATE=%%b
+if %RESULT_ATOWU_WINDOWS_UPDATE%==Please (
+    echo [%time%] [Status:QUEUED] [Service] Windows Update is Starting or Stopping... 
+    echo [%time%] [Status:QUEUED] [Service] Windows Update is Starting or Stopping... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
+    goto CHECK_TWICE_WUAUSERV_ERROR_ATTEMPT_1
+) else (
+    goto CHECK_SERVICE_WUAUSERV_ERROR_ATTEMPT_1
+)
+
+:CHECK_TWICE_WUAUSERV_ERROR_ATTEMPT_1
+if %DEBUGMODE%==1 (
+    echo CHECK_TWICE_WUAUSERV_ERROR_ATTEMPT_1 Label
+)
+for /f "tokens=7" %%b in ('net stop WUAUSERV ^| findstr service') do set RESULT_ATOWU_WINDOWS_UPDATE=%%b
+if %RESULT_ATOWU_WINDOWS_UPDATE%==Please (
+    goto CHECK_TWICE_WUAUSERV_ERROR_ATTEMPT_1
+) else (
+    goto CHECK_SERVICE_WUAUSERV_ERROR_ATTEMPT_1
+)
+
+:CHECK_SERVICE_WUAUSERV_ERROR_ATTEMPT_1
+for /f "tokens=4" %%b in ('sc query WUAUSERV ^| findstr STATE') do set STATUS_WUAUSERV_IN_ENGINE=%%b
+if %DEBUGMODE%==1 (
+    echo Result Variable STATUS_WUAUSERV_IN_ENGINE = %STATUS_WUAUSERV_IN_ENGINE%
+)
 if %STATUS_WUAUSERV_IN_ENGINE%==RUNNING goto WUAUSERV_ERROR_ATTEMPT_2
 if %STATUS_WUAUSERV_IN_ENGINE%==STOPPED goto WUAUSERV_PRINT_MESSAGE_AND_OUT
 
 :WUAUSERV_ERROR_ATTEMPT_2
-echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% Windows Update Failed to Shut Down, trying again... (Attempt:2)
-echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% Windows Update Failed to Shut Down, trying again... (Attempt:2) >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
-sc config wuauserv start= disabled
-net stop wuauserv
-for /f "tokens=4" %%b in ('sc query wuauserv ^| findstr STATE') do set STATUS_WUAUSERV_IN_ENGINE=%%b
+if %DEBUGMODE%==1 (
+    echo WUAUSERV_ERROR_ATTEMPT_2 Label
+)
+echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% Windows Update Failed to Shut Down, trying again... (Attempt:1)
+echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% Windows Update Failed to Shut Down, trying again... (Attempt:1) >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
+sc config WUAUSERV start= disabled>NUL
+set RESULT_ATOWU_WUAUSERV=NOT_FOUND
+for /f "tokens=7" %%b in ('net stop WUAUSERV ^| findstr service') do set RESULT_ATOWU_WINDOWS_UPDATE=%%b
+if %RESULT_ATOWU_WINDOWS_UPDATE%==Please (
+    echo [%time%] [Status:QUEUED] [Service] Windows Update is Starting or Stopping... 
+    echo [%time%] [Status:QUEUED] [Service] Windows Update is Starting or Stopping... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
+    goto CHECK_TWICE_WUAUSERV_ERROR_ATTEMPT_2
+) else (
+    goto CHECK_SERVICE_WUAUSERV_ERROR_ATTEMPT_2
+)
+
+:CHECK_TWICE_WUAUSERV_ERROR_ATTEMPT_2
+if %DEBUGMODE%==1 (
+    echo CHECK_TWICE_WUAUSERV_ERROR_ATTEMPT_2 Label
+)
+for /f "tokens=7" %%b in ('net stop WUAUSERV ^| findstr service') do set RESULT_ATOWU_WINDOWS_UPDATE=%%b
+if %RESULT_ATOWU_WINDOWS_UPDATE%==Please (
+    goto CHECK_TWICE_WUAUSERV_ERROR_ATTEMPT_2
+) else (
+    goto CHECK_SERVICE_WUAUSERV_ERROR_ATTEMPT_2
+)
+
+:CHECK_SERVICE_WUAUSERV_ERROR_ATTEMPT_2
+for /f "tokens=4" %%b in ('sc query WUAUSERV ^| findstr STATE') do set STATUS_WUAUSERV_IN_ENGINE=%%b
+if %DEBUGMODE%==1 (
+    echo Result Variable STATUS_WUAUSERV_IN_ENGINE = %STATUS_WUAUSERV_IN_ENGINE%
+)
 if %STATUS_WUAUSERV_IN_ENGINE%==RUNNING goto WUAUSERV_ERROR_ATTEMPT_3
 if %STATUS_WUAUSERV_IN_ENGINE%==STOPPED goto WUAUSERV_PRINT_MESSAGE_AND_OUT
 
 :WUAUSERV_ERROR_ATTEMPT_3
-echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% Windows Update Failed to Shut Down, trying again... (Attempt:3)
-echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% Windows Update Failed to Shut Down, trying again... (Attempt:3) >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
-sc config wuauserv start= disabled
-net stop wuauserv
-for /f "tokens=4" %%b in ('sc query wuauserv ^| findstr STATE') do set STATUS_WUAUSERV_IN_ENGINE=%%b
+if %DEBUGMODE%==1 (
+    echo WUAUSERV_ERROR_ATTEMPT_3 Label
+)
+echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% Windows Update Failed to Shut Down, trying again... (Attempt:1)
+echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% Windows Update Failed to Shut Down, trying again... (Attempt:1) >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
+sc config WUAUSERV start= disabled>NUL
+set RESULT_ATOWU_WUAUSERV=NOT_FOUND
+for /f "tokens=7" %%b in ('net stop WUAUSERV ^| findstr service') do set RESULT_ATOWU_WINDOWS_UPDATE=%%b
+if %RESULT_ATOWU_WINDOWS_UPDATE%==Please (
+    echo [%time%] [Status:QUEUED] [Service] Windows Update is Starting or Stopping... 
+    echo [%time%] [Status:QUEUED] [Service] Windows Update is Starting or Stopping... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
+    goto CHECK_TWICE_WUAUSERV_ERROR_ATTEMPT_3
+) else (
+    goto CHECK_SERVICE_WUAUSERV_ERROR_ATTEMPT_3
+)
+
+:CHECK_TWICE_WUAUSERV_ERROR_ATTEMPT_3
+if %DEBUGMODE%==1 (
+    echo CHECK_TWICE_WUAUSERV_ERROR_ATTEMPT_3 Label
+)
+for /f "tokens=7" %%b in ('net stop WUAUSERV ^| findstr service') do set RESULT_ATOWU_WINDOWS_UPDATE=%%b
+if %RESULT_ATOWU_WINDOWS_UPDATE%==Please (
+    goto CHECK_TWICE_WUAUSERV_ERROR_ATTEMPT_3
+) else (
+    goto CHECK_SERVICE_WUAUSERV_ERROR_ATTEMPT_3
+)
+
+:CHECK_SERVICE_WUAUSERV_ERROR_ATTEMPT_3
+for /f "tokens=4" %%b in ('sc query WUAUSERV ^| findstr STATE') do set STATUS_WUAUSERV_IN_ENGINE=%%b
+if %DEBUGMODE%==1 (
+    echo Result Variable STATUS_WUAUSERV_IN_ENGINE = %STATUS_WUAUSERV_IN_ENGINE%
+)
 if %STATUS_WUAUSERV_IN_ENGINE%==RUNNING goto WUAUSERV_ERROR_LAST_ATTEMPT
 if %STATUS_WUAUSERV_IN_ENGINE%==STOPPED goto WUAUSERV_PRINT_MESSAGE_AND_OUT
 
 :WUAUSERV_ERROR_LAST_ATTEMPT
+if %DEBUGMODE%==1 (
+    echo WUAUSERV_ERROR_LAST_ATTEMPT Label
+)
 echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% too many Attempts to Shutting down Windows Update, Skip to next Task...
 echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% too many Attempts to Shutting down Windows Update, Skip to next Task... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
 goto DOSVC_SERVICE
@@ -527,9 +644,13 @@ if errorlevel 1 goto WINDOWSDEFEND_UPDATE_KILLPROCESS_ATTEMPT_1
 echo [%time%] [Status:Success_Shutting_down] [App]%DEBUGMESSAGE% Windows Defender Update Successfully Shut down 
 echo [%time%] [Status:Success_Shutting_down] [App]%DEBUGMESSAGE% Windows Defender Update Successfully Shut down >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
 if %LESS_MODE%==1 (
-    timeout 2 /nobreak>NUL
+    timeout 3 /nobreak>NUL
     goto Engine_Less_Mode
+) else (
+    timeout 1 /nobreak>NUL
+    goto Engine
 )
+
 
 :WINDOWSDEFEND_UPDATE_KILLPROCESS_ATTEMPT_1
 echo [%time%] [Status:Failed_Shutting_down] [App]%DEBUGMESSAGE% Windows Defender Update Failed to Shut Down, trying again... (Attempt:1)
@@ -539,8 +660,11 @@ if errorlevel 1 goto WINDOWSDEFEND_UPDATE_KILLPROCESS_ATTEMPT_2
 echo [%time%] [Status:Success_Shutting_down] [App]%DEBUGMESSAGE% Windows Defender Update Successfully Shut down 
 echo [%time%] [Status:Success_Shutting_down] [App]%DEBUGMESSAGE% Windows Defender Update Successfully Shut down >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
 if %LESS_MODE%==1 (
-    timeout 2 /nobreak>NUL
+    timeout 3 /nobreak>NUL
     goto Engine_Less_Mode
+) else (
+    timeout 1 /nobreak>NUL
+    goto Engine
 )
 
 
@@ -552,8 +676,11 @@ if errorlevel 1 goto WINDOWSDEFEND_UPDATE_KILLPROCESS_ATTEMPT_3
 echo [%time%] [Status:Success_Shutting_down] [App]%DEBUGMESSAGE% Windows Defender Update Successfully Shut down 
 echo [%time%] [Status:Success_Shutting_down] [App]%DEBUGMESSAGE% Windows Defender Update Successfully Shut down >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
 if %LESS_MODE%==1 (
-    timeout 2 /nobreak>NUL
+    timeout 3 /nobreak>NUL
     goto Engine_Less_Mode
+) else (
+    timeout 1 /nobreak>NUL
+    goto Engine
 )
 
 
@@ -565,8 +692,11 @@ if errorlevel 1 goto WINDOWSDEFEND_UPDATE_KILLPROCESS_LAST_ATTEMPT
 echo [%time%] [Status:Success_Shutting_down] [App]%DEBUGMESSAGE% Windows Defender Update Successfully Shut down 
 echo [%time%] [Status:Success_Shutting_down] [App]%DEBUGMESSAGE% Windows Defender Update Successfully Shut down >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
 if %LESS_MODE%==1 (
-    timeout 2 /nobreak>NUL
+    timeout 3 /nobreak>NUL
     goto Engine_Less_Mode
+) else (
+    timeout 1 /nobreak>NUL
+    goto Engine
 )
 
 
@@ -574,8 +704,11 @@ if %LESS_MODE%==1 (
 echo [%time%] [Status:Failed_Shutting_down] [App]%DEBUGMESSAGE% too many Attempts to Shutting down Windows Defender Update, Skip to next Task...
 echo [%time%] [Status:Failed_Shutting_down] [App]%DEBUGMESSAGE% too many Attempts to Shutting down Windows Defender Update, Skip to next Task... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
 if %LESS_MODE%==1 (
-    timeout 2 /nobreak>NUL
+    timeout 3 /nobreak>NUL
     goto Engine_Less_Mode
+) else (
+    timeout 1 /nobreak>NUL
+    goto Engine
 )
 
 
