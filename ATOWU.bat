@@ -585,6 +585,9 @@ if %RESULT_ATOWU_DOSVC%==Please (
 )
 
 :DOSVC_PROCESS
+if %DEBUGMODE%==1 (
+    echo DOSVC_PROCESS Label
+)
 sc config DoSvc start= disabled>NUL
 set RESULT_ATOWU_DOSVC=NOT_FOUND
 for /f "tokens=7" %%b in ('net stop DoSvc ^| findstr service') do set RESULT_ATOWU_DOSVC=%%b
@@ -598,6 +601,9 @@ if %RESULT_ATOWU_DOSVC%==Please (
 )
 
 :CHECK_TWICE_DOSVC
+if %DEBUGMODE%==1 (
+    echo CHECK_TWICE_DOSVC Label
+)
 for /f "tokens=7" %%b in ('net stop DoSvc ^| findstr service') do set RESULT_ATOWU_DOSVC=%%b
 if %RESULT_ATOWU_DOSVC%==Please (
     goto CHECK_TWICE_DOSVC
@@ -606,12 +612,18 @@ if %RESULT_ATOWU_DOSVC%==Please (
 )
 
 :CHECK_SERVICE_DOSVC
+if %DEBUGMODE%==1 (
+    echo CHECK_SERVICE_DOSVC Label
+)
 for /f "tokens=4" %%b in ('sc query DoSvc ^| findstr STATE') do set STATUS_DOSVC_IN_ENGINE=%%b
 if %STATUS_DOSVC_IN_ENGINE%==RUNNING goto DOSVC_ERROR
 if %STATUS_DOSVC_IN_ENGINE%==STOPPED goto DOSVC_PRINT_MESSAGE_AND_OUT
 
 
 :DOSVC_PRINT_MESSAGE_AND_OUT
+if %DEBUGMODE%==1 (
+    echo DOSVC_PRINT_MESSAGE_AND_OUT Label
+)
 echo [%time%] [Status:Success_Shutting_down] [Service]%DEBUGMESSAGE% Delivery Optimization Successfully Shut down 
 echo [%time%] [Status:Success_Shutting_down] [Service]%DEBUGMESSAGE% Delivery Optimization Successfully Shut down >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
 goto WINDOWSDEFEND_UPDATE_KILLPROCESS
@@ -645,6 +657,9 @@ if %RESULT_ATOWU_DOSVC%==Please (
 )
 
 :CHECK_SERVICE_DOSVC_ERROR_ATTEMPT_1
+if %DEBUGMODE%==1 (
+    echo CHECK_SERVICE_DOSVC_ERROR_ATTEMPT_1 Label
+)
 for /f "tokens=4" %%b in ('sc query DoSvc ^| findstr STATE') do set STATUS_DOSVC_IN_ENGINE=%%b
 if %DEBUGMODE%==1 (
     echo Result Variable STATUS_DOSVC_IN_ENGINE = %STATUS_DOSVC_IN_ENGINE%
@@ -681,6 +696,9 @@ if %RESULT_ATOWU_DOSVC%==Please (
 )
 
 :CHECK_SERVICE_DOSVC_ERROR_ATTEMPT_2
+if %DEBUGMODE%==1 (
+    echo CHECK_SERVICE_DOSVC_ERROR_ATTEMPT_2 Label
+)
 for /f "tokens=4" %%b in ('sc query DoSvc ^| findstr STATE') do set STATUS_DOSVC_IN_ENGINE=%%b
 if %DEBUGMODE%==1 (
     echo Result Variable STATUS_DOSVC_IN_ENGINE = %STATUS_DOSVC_IN_ENGINE%
@@ -689,6 +707,9 @@ if %STATUS_DOSVC_IN_ENGINE%==RUNNING goto DOSVC_ERROR_ATTEMPT_3
 if %STATUS_DOSVC_IN_ENGINE%==STOPPED goto DOSVC_PRINT_MESSAGE_AND_OUT
 
 :DOSVC_ERROR_ATTEMPT_3
+if %DEBUGMODE%==1 (
+    echo DOSVC_ERROR_ATTEMPT_3 Label
+)
 echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% Delivery Optimization Failed to Shut Down, trying again... (Attempt:3)
 echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% Delivery Optimization Failed to Shut Down, trying again... (Attempt:3) >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
 set RESULT_ATOWU_DOSVC=NOT_FOUND
@@ -713,6 +734,9 @@ if %RESULT_ATOWU_DOSVC%==Please (
 )
 
 :CHECK_SERVICE_DOSVC_ERROR_ATTEMPT_3
+if %DEBUGMODE%==1 (
+    echo CHECK_SERVICE_DOSVC_ERROR_ATTEMPT_3 Label
+)
 for /f "tokens=4" %%b in ('sc query DoSvc ^| findstr STATE') do set STATUS_DOSVC_IN_ENGINE=%%b
 if %DEBUGMODE%==1 (
     echo Result Variable STATUS_DOSVC_IN_ENGINE = %STATUS_DOSVC_IN_ENGINE%
@@ -721,6 +745,9 @@ if %STATUS_DOSVC_IN_ENGINE%==RUNNING goto DOSVC_ERROR_LAST_ATTEMPT
 if %STATUS_DOSVC_IN_ENGINE%==STOPPED goto DOSVC_PRINT_MESSAGE_AND_OUT
 
 :DOSVC_ERROR_LAST_ATTEMPT
+if %DEBUGMODE%==1 (
+    echo DOSVC_ERROR_LAST_ATTEMPT Label
+)
 echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% too many Attempts to Shutting down Delivery Optimization, Skip to next Task...
 echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% too many Attempts to Shutting down Delivery Optimization, Skip to next Task... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
 goto WINDOWSDEFEND_UPDATE_KILLPROCESS
