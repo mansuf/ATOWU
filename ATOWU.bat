@@ -712,6 +712,7 @@ if %DEBUGMODE%==1 (
 )
 echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% Delivery Optimization Failed to Shut Down, trying again... (Attempt:3)
 echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% Delivery Optimization Failed to Shut Down, trying again... (Attempt:3) >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
+sc config DoSvc start= disabled>NUL
 set RESULT_ATOWU_DOSVC=NOT_FOUND
 for /f "tokens=7" %%b in ('net stop DoSvc ^| findstr service') do set RESULT_ATOWU_DOSVC=%%b
 if %RESULT_ATOWU_DOSVC%==Please (
