@@ -480,8 +480,8 @@ if %STATUS_WUAUSERV_IN_ENGINE%==STOPPED goto WUAUSERV_PRINT_MESSAGE_AND_OUT
 if %DEBUGMODE%==1 (
     echo WUAUSERV_ERROR_ATTEMPT_2 Label
 )
-echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% Windows Update Failed to Shut Down, trying again... (Attempt:1)
-echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% Windows Update Failed to Shut Down, trying again... (Attempt:1) >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
+echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% Windows Update Failed to Shut Down, trying again... (Attempt:2)
+echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% Windows Update Failed to Shut Down, trying again... (Attempt:2) >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
 sc config WUAUSERV start= disabled>NUL
 set RESULT_ATOWU_WUAUSERV=NOT_FOUND
 for /f "tokens=7" %%b in ('net stop WUAUSERV ^| findstr service') do set RESULT_ATOWU_WINDOWS_UPDATE=%%b
@@ -516,8 +516,8 @@ if %STATUS_WUAUSERV_IN_ENGINE%==STOPPED goto WUAUSERV_PRINT_MESSAGE_AND_OUT
 if %DEBUGMODE%==1 (
     echo WUAUSERV_ERROR_ATTEMPT_3 Label
 )
-echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% Windows Update Failed to Shut Down, trying again... (Attempt:1)
-echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% Windows Update Failed to Shut Down, trying again... (Attempt:1) >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
+echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% Windows Update Failed to Shut Down, trying again... (Attempt:3)
+echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% Windows Update Failed to Shut Down, trying again... (Attempt:3) >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
 sc config WUAUSERV start= disabled>NUL
 set RESULT_ATOWU_WUAUSERV=NOT_FOUND
 for /f "tokens=7" %%b in ('net stop WUAUSERV ^| findstr service') do set RESULT_ATOWU_WINDOWS_UPDATE=%%b
@@ -558,7 +558,7 @@ goto DOSVC_SERVICE
 
 :DOSVC_SERVICE
 if %DEBUGMODE%==1 (
-    echo DOSVC_SERVICE IF COMMAND
+    echo DOSVC_SERVICE Label
 )
 if %STATUSDOSVC%==NOT_FOUND goto WINDOWSDEFEND_UPDATE_KILLPROCESS
 if %STATUSDOSVC%==STOPPED goto WINDOWSDEFEND_UPDATE_KILLPROCESS
@@ -569,10 +569,26 @@ echo [%time%] [Status:FOUND!!!] [Service]%DEBUGMESSAGE% Delivery Optimization is
 echo [%time%] [Status:FOUND!!!] [Service]%DEBUGMESSAGE% Delivery Optimization is Running, trying to shutting down... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
 goto DOSVC_PROCESS
 
+:DOSVC_PROCESS_DEBUG
+echo DOSVC_PROCESS_DEBUG Label
+set DOSVC_PROCESS_DEBUG=NOT_FOUND
+echo Result Variable DOSVC_PROCESS_DEBUG (Before) = %DOSVC_PROCESS_DEBUG%
+for /f "tokens=4" %%b in ('sc query DoSvc ^| findstr STATE') do set DOSVC_PROCESS_DEBUG=%%b
+echo Result Variable DOSVC_PROCESS_DEBUG (After) = %DOSVC_PROCESS_DEBUG%
+echo Result Variable RESULT_ATOWU_DOSVC = %RESULT_ATOWU_DOSVC%
+if %RESULT_ATOWU_DOSVC%==Please (
+    echo [%time%] [Status:QUEUED] [Service] Windows Update is Starting or Stopping... 
+    echo [%time%] [Status:QUEUED] [Service] Windows Update is Starting or Stopping... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
+    goto CHECK_TWICE_DOSVC
+) else (
+    goto CHECK_SERVICE_DOSVC
+)
+
 :DOSVC_PROCESS
 sc config DoSvc start= disabled>NUL
 set RESULT_ATOWU_DOSVC=NOT_FOUND
 for /f "tokens=7" %%b in ('net stop DoSvc ^| findstr service') do set RESULT_ATOWU_DOSVC=%%b
+if %DEBUGMODE%==1 goto DOSVC_PROCESS_DEBUG
 if %RESULT_ATOWU_DOSVC%==Please (
     echo [%time%] [Status:QUEUED] [Service] Delivery Optimization is Starting or Stopping... 
     echo [%time%] [Status:QUEUED] [Service] Delivery Optimization is Starting or Stopping... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
@@ -601,29 +617,106 @@ echo [%time%] [Status:Success_Shutting_down] [Service]%DEBUGMESSAGE% Delivery Op
 goto WINDOWSDEFEND_UPDATE_KILLPROCESS
 
 :DOSVC_ERROR
+if %DEBUGMODE%==1 (
+    echo DOSVC_ERROR Label
+)
 echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% Delivery Optimization Failed to Shut Down, trying again... (Attempt:1)
 echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% Delivery Optimization Failed to Shut Down, trying again... (Attempt:1) >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
-sc config DoSvc start= disabled
-net stop DoSvc
+sc config DOSVC start= disabled>NUL
+set RESULT_ATOWU_DOSVC=NOT_FOUND
+for /f "tokens=7" %%b in ('net stop DoSvc ^| findstr service') do set RESULT_ATOWU_DOSVC=%%b
+if %RESULT_ATOWU_DOSVC%==Please (
+    echo [%time%] [Status:QUEUED] [Service] Delivery Optimization is Starting or Stopping... 
+    echo [%time%] [Status:QUEUED] [Service] Delivery Optimization is Starting or Stopping... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
+    goto CHECK_TWICE_DOSVC_ERROR_ATTEMPT_1
+) else (
+    goto CHECK_SERVICE_DOSVC_ERROR_ATTEMPT_1
+)
+
+:CHECK_TWICE_DOSVC_ERROR_ATTEMPT_1
+if %DEBUGMODE%==1 (
+    echo CHECK_TWICE_DOSVC_ERROR_ATTEMPT_1 Label
+)
+for /f "tokens=7" %%b in ('net stop DoSvc ^| findstr service') do set RESULT_ATOWU_DOSVC=%%b
+if %RESULT_ATOWU_DOSVC%==Please (
+    goto CHECK_TWICE_DOSVC_ERROR_ATTEMPT_1
+) else (
+    goto CHECK_SERVICE_DOSVC_ERROR_ATTEMPT_1
+)
+
+:CHECK_SERVICE_DOSVC_ERROR_ATTEMPT_1
 for /f "tokens=4" %%b in ('sc query DoSvc ^| findstr STATE') do set STATUS_DOSVC_IN_ENGINE=%%b
+if %DEBUGMODE%==1 (
+    echo Result Variable STATUS_DOSVC_IN_ENGINE = %STATUS_DOSVC_IN_ENGINE%
+)
 if %STATUS_DOSVC_IN_ENGINE%==RUNNING goto DOSVC_ERROR_ATTEMPT_2
 if %STATUS_DOSVC_IN_ENGINE%==STOPPED goto DOSVC_PRINT_MESSAGE_AND_OUT
 
 :DOSVC_ERROR_ATTEMPT_2
+if %DEBUGMODE%==1 (
+    echo DOSVC_ERROR_ATTEMPT_2 Label
+)
 echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% Delivery Optimization Failed to Shut Down, trying again... (Attempt:2)
 echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% Delivery Optimization Failed to Shut Down, trying again... (Attempt:2) >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
-sc config DoSvc start= disabled
-net stop DoSvc
+sc config DOSVC start= disabled>NUL
+set RESULT_ATOWU_DOSVC=NOT_FOUND
+for /f "tokens=7" %%b in ('net stop DoSvc ^| findstr service') do set RESULT_ATOWU_DOSVC=%%b
+if %RESULT_ATOWU_DOSVC%==Please (
+    echo [%time%] [Status:QUEUED] [Service] Delivery Optimization is Starting or Stopping... 
+    echo [%time%] [Status:QUEUED] [Service] Delivery Optimization is Starting or Stopping... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
+    goto CHECK_TWICE_DOSVC_ERROR_ATTEMPT_2
+) else (
+    goto CHECK_SERVICE_DOSVC_ERROR_ATTEMPT_2
+)
+
+:CHECK_TWICE_DOSVC_ERROR_ATTEMPT_2
+if %DEBUGMODE%==1 (
+    echo CHECK_TWICE_DOSVC_ERROR_ATTEMPT_2 Label
+)
+for /f "tokens=7" %%b in ('net stop DoSvc ^| findstr service') do set RESULT_ATOWU_DOSVC=%%b
+if %RESULT_ATOWU_DOSVC%==Please (
+    goto CHECK_TWICE_DOSVC_ERROR_ATTEMPT_2
+) else (
+    goto CHECK_SERVICE_DOSVC_ERROR_ATTEMPT_2
+)
+
+:CHECK_SERVICE_DOSVC_ERROR_ATTEMPT_2
 for /f "tokens=4" %%b in ('sc query DoSvc ^| findstr STATE') do set STATUS_DOSVC_IN_ENGINE=%%b
+if %DEBUGMODE%==1 (
+    echo Result Variable STATUS_DOSVC_IN_ENGINE = %STATUS_DOSVC_IN_ENGINE%
+)
 if %STATUS_DOSVC_IN_ENGINE%==RUNNING goto DOSVC_ERROR_ATTEMPT_3
 if %STATUS_DOSVC_IN_ENGINE%==STOPPED goto DOSVC_PRINT_MESSAGE_AND_OUT
 
 :DOSVC_ERROR_ATTEMPT_3
 echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% Delivery Optimization Failed to Shut Down, trying again... (Attempt:3)
 echo [%time%] [Status:Failed_Shutting_down] [Service]%DEBUGMESSAGE% Delivery Optimization Failed to Shut Down, trying again... (Attempt:3) >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
-sc config DoSvc start= disabled
-net stop DoSvc
+set RESULT_ATOWU_DOSVC=NOT_FOUND
+for /f "tokens=7" %%b in ('net stop DoSvc ^| findstr service') do set RESULT_ATOWU_DOSVC=%%b
+if %RESULT_ATOWU_DOSVC%==Please (
+    echo [%time%] [Status:QUEUED] [Service] Delivery Optimization is Starting or Stopping... 
+    echo [%time%] [Status:QUEUED] [Service] Delivery Optimization is Starting or Stopping... >> %temp%\ATOWU\%DEBUG_DIR_LOG%ATOWU.log
+    goto CHECK_TWICE_DOSVC_ERROR_ATTEMPT_3
+) else (
+    goto CHECK_SERVICE_DOSVC_ERROR_ATTEMPT_3
+)
+
+:CHECK_TWICE_DOSVC_ERROR_ATTEMPT_3
+if %DEBUGMODE%==1 (
+    echo CHECK_TWICE_DOSVC_ERROR_ATTEMPT_3 Label
+)
+for /f "tokens=7" %%b in ('net stop DoSvc ^| findstr service') do set RESULT_ATOWU_DOSVC=%%b
+if %RESULT_ATOWU_DOSVC%==Please (
+    goto CHECK_TWICE_DOSVC_ERROR_ATTEMPT_3
+) else (
+    goto CHECK_SERVICE_DOSVC_ERROR_ATTEMPT_3
+)
+
+:CHECK_SERVICE_DOSVC_ERROR_ATTEMPT_3
 for /f "tokens=4" %%b in ('sc query DoSvc ^| findstr STATE') do set STATUS_DOSVC_IN_ENGINE=%%b
+if %DEBUGMODE%==1 (
+    echo Result Variable STATUS_DOSVC_IN_ENGINE = %STATUS_DOSVC_IN_ENGINE%
+)
 if %STATUS_DOSVC_IN_ENGINE%==RUNNING goto DOSVC_ERROR_LAST_ATTEMPT
 if %STATUS_DOSVC_IN_ENGINE%==STOPPED goto DOSVC_PRINT_MESSAGE_AND_OUT
 
