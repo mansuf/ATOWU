@@ -176,33 +176,3 @@ echo Successfully install ATOWU Enjoy! :D
 echo PRESS ANY BUTTON TO CLOSE THIS (NOT THE POWER BUTTON, BRUH...)
 pause>NUL
 exit
-
-:Result_Install
-cls
-echo Result Install
-if %_atowu_%==1 (
-    echo ATOWU.bat Successfully Installed
-) else (
-    echo ATOWU.bat Failed to install
-)
-if %_vbs_%==1 (
-    echo ScriptBackground.vbs Successfully Installed
-) else (
-    echo ScriptBackground.vbs Failed to install
-)
-if %_cmd_%==1 (
-    echo ATOWU_Run_in_Background.cmd Successfully Installed
-) else (
-    echo ATOWU_Run_in_Background.cmd Failed to Install
-)
-if %_cmd1_%==1 (
-    echo LessMode_Activator.cmd Successfully Installed
-) else (
-    echo LessMode_Activator.cmd Failed to Install
-)
-echo.
-echo.
-echo Successfully install ATOWU Enjoy! :D
-echo PRESS ANY BUTTON TO CLOSE THIS (NOT THE POWER BUTTON, BRUH...)
-pause>NUL
-exit
