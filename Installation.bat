@@ -152,7 +152,7 @@ if exist "%DIR_INSTALL%\LessMode_Activator.cmd" (
 ) else (
     set _cmd1_=0
 )
-goto Result_Install
+goto Result_Install_v2
 
 :Result_Install_v2
 cls
