@@ -200,26 +200,27 @@ def bits():
         print("Background Windows Update is Disabled")
 
 def bits_check():
-    print("[" + y_read_time.strip() + "]" + " " + "[Status:FOUND!!!] [Service] Background Windows Update is Running, trying to shutting down...")
-    system('sc config bits start =disabled>NUL')
     x = open("off_bits.bat", "w")
-    x.write("@echo off\nfor /f " + '"tokens=7"' + " %%b in ('net stop bits ^| findstr service') do echo %%b > result_off_bits.txt")
+    x.write("@echo off\nfor /f " + '"tokens=4"' + " %%b in ('sc query bits ^| findstr STATE') do echo %%b > result_off_bits.txt")
     x.close()
     system('"off_bits.bat"')
     if os.path.exists("off_bits.bat"):
         os.remove("off_bits.bat")
-    x = open("result_off_bits.txt", "r")
-    x_bits_result = x.read()
-    x.close()
     if os.path.exists("result_off_bits.txt"):
-        os.remove("result_off_bits.txt")
-        bits_print_message_and_quit()
+        x = open("result_off_bits.txt", "r")
+        x_bits_result = x.read()
+        x.close()
+        if x_bits_result == "RUNNING":
+            bits_error_attempt_1()
+        else:
+            bits_print_message_and_quit()
     else:
-        bits_error_attempt_1()
+        print("[" + y_read_time.strip() + "]" + " " + "[Status:ERROR] [Service] Somethings Wrong, hang on while we rolling back the current action")
+        bits_check()
         
 
 def bits_error_attempt_1():
-    print("[" + y_read_time.strip() + "]" + " " "[Status:Failed_Shutting_down] [Service] Background Windows Update Failed to Shut Down, trying again... (Attempt:1)")
+    print("[" + y_read_time.strip() + "]" + " " + "[Status:Failed_Shutting_down] [Service] Background Windows Update Failed to Shut Down, trying again... (Attempt:1)")
 
 def bits_print_message_and_quit():
     print("[" + y_read_time.strip() + "]" + " " + "[Status:Success_Shutting_down] [Service] Background Windows Update Successfully Shut down ")
