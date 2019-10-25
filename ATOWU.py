@@ -1,23 +1,10 @@
 # ATOWU in Python
 import os
 from os import system
+import datetime
 
 def on_exit():
     exit()
-
-def time():
-    global y_read_time
-    x = open("time.bat", "w")
-    x.write("@echo off\necho %time% > time.txt")
-    x.close()
-    system('"time.bat"')
-    y = open("time.txt", "r")
-    y_read_time = y.read()
-    y.close()
-    if os.path.exists("time.bat"):
-        os.remove("time.bat")
-    if os.path.exists("time.txt"):
-        os.remove("time.txt")
 
 def date():
     global y_read_date
@@ -36,14 +23,16 @@ def date():
 
 def menu_message():
     print("ATOWU Start Date : " + y_read_date.strip())
-    print("[" + y_read_time.strip() + "]" + " " + "[Status:Preparing] Starting ATOWU...")
+    x_time = str(datetime.datetime.now().time())
+    print("[" + x_time + "]" + " " + "[Status:Preparing] Starting ATOWU...")
 
 def check_less_mode():
     global less_mode
     if os.path.exists("%temp%\\ATOWU.Less-mode"):
         os.remove("%temp%\\ATOWU.Less-mode")
         less_mode = "1"
-        print("[" + y_read_time.strip() + "]" + " " + "[Status:Less Mode Turned On] ATOWU Running in Less Mode")
+        x_time = str(datetime.datetime.now().time())
+        print("[" + x_time + "]" + " " + "[Status:Less Mode Turned On] ATOWU Running in Less Mode")
     else:
         less_mode = "0"
 
@@ -68,10 +57,12 @@ def check_admin():
     y = open("result_check_admin.txt", "r")
     y_read_check_admin = y.read()
     if y_read_check_admin.strip() == "SUCCESS":
-        print("[" + y_read_time.strip() + "]" + " " + "ATOWU Running as Administrator User")
+        x_time = str(datetime.datetime.now().time())
+        print("[" + x_time + "]" + " " + "[Status:Preparing] ATOWU Running as Administrator User")
     else:
-        print("[" + y_read_time.strip() + "]" + " " + "ATOWU Running as Local User")
-        print("[" + y_read_time.strip() + "]" + " " + "ATOWU is failed to start, maybe not running as Administrator ?")
+        x_time = str(datetime.datetime.now().time())
+        print("[" + x_time + "]" + " " + "[Status:Failed_to_Start] ATOWU Running as Local User")
+        print("[" + x_time + "]" + " " + "[Status:Failed_to_Start] ATOWU is failed to start, maybe not running as Administrator ?")
         y.close()
         if os.path.exists("check_admin.bat"):
             os.remove("check_admin.bat")
@@ -93,14 +84,16 @@ def find_OS():
     y = open("result_findOS.txt", "r")
     y_read_find_OS = y.read()
     y.close()
-    print("[" + y_read_time.strip() + "]" + " " + "[Status:Preparing] ATOWU Running on : " + y_read_find_OS.strip())
+    x_time = str(datetime.datetime.now().time())
+    print("[" + x_time + "]" + " " + "[Status:Preparing] ATOWU Running on : " + y_read_find_OS.strip())
     if os.path.exists("find_os.bat"):
         os.remove("find_os.bat")
     if os.path.exists("result_findOS.txt"):
         os.remove("result_findOS.txt")
     
 def success_start_messages():
-    print("[" + y_read_time.strip() + "]" + " " + "[Status:Running] SUCCESS!! ATOWU is Running, time start : " + y_read_time.strip())
+    x_time = str(datetime.datetime.now().time())
+    print("[" + x_time + "]" + " " + "[Status:Running] SUCCESS!! ATOWU is Running, time start : " + x_time)
     
 def enginev2():
     # global pid_windows_defend_update
@@ -166,7 +159,8 @@ def enginev2():
 
 def bits():
     if x_bits.strip() == "RUNNING":
-        print("[" + y_read_time.strip() + "]" + " " + "[Status:FOUND!!!] [Service] Background Windows Update is Running, trying to shutting down...")
+        x_time = str(datetime.datetime.now().time())
+        print("[" + x_time + "]" + " " + "[Status:FOUND!!!] [Service] Background Windows Update is Running, trying to shutting down...")
         system('sc config bits start= disabled>NUL')
         x = open("off_bits.bat", "w")
         x.write("@echo off\nfor /f " + '"tokens=7"' + " %%b in ('net stop bits ^| findstr service') do echo %%b > result_off_bits.txt")
@@ -180,7 +174,8 @@ def bits():
         if os.path.exists("result_off_bits.txt"):
             os.remove("result_off_bits.txt")
         if x_bits_result == "Please":
-            print("[" + y_read_time.strip() + "]" + " " + "[Status:QUEUED] [Service] Background Windows Update is Starting or Stopping... ")
+            x_time = str(datetime.datetime.now().time())
+            print("[" + x_time + "]" + " " + "[Status:QUEUED] [Service] Background Windows Update is Starting or Stopping... ")
             while 3 > 2:
                 x = open("off_bits.bat", "w")
                 x.write("@echo off\nfor /f " + '"tokens=7"' + " %%b in ('net stop bits ^| findstr service') do echo %%b > result_off_bits.txt")
@@ -197,7 +192,9 @@ def bits():
                     bits_check()
         bits_check()
     else:
-        print("Background Windows Update is Disabled")
+        x_time = str(datetime.datetime.now().time())
+        print("[" + x_time + "]" + " " + "Background Windows Update is Disabled")
+        enginev2()
 
 def bits_check():
     x = open("off_bits.bat", "w")
@@ -215,15 +212,18 @@ def bits_check():
         else:
             bits_print_message_and_quit()
     else:
-        print("[" + y_read_time.strip() + "]" + " " + "[Status:ERROR] [Service] Somethings Wrong, hang on while we rolling back the current action")
+        x_time = str(datetime.datetime.now().time())
+        print("[" + x_time + "]" + " " + "[Status:ERROR] [Service] Somethings Wrong, hang on while we rolling back the current action")
         bits_check()
         
 
 def bits_error_attempt_1():
-    print("[" + y_read_time.strip() + "]" + " " + "[Status:Failed_Shutting_down] [Service] Background Windows Update Failed to Shut Down, trying again... (Attempt:1)")
+    x_time = str(datetime.datetime.now().time())
+    print("[" + x_time + "]" + " " + "[Status:Failed_Shutting_down] [Service] Background Windows Update Failed to Shut Down, trying again... (Attempt:1)")
 
 def bits_print_message_and_quit():
-    print("[" + y_read_time.strip() + "]" + " " + "[Status:Success_Shutting_down] [Service] Background Windows Update Successfully Shut down ")
+    x_time = str(datetime.datetime.now().time())
+    print("[" + x_time + "]" + " " + "[Status:Success_Shutting_down] [Service] Background Windows Update Successfully Shut down ")
             
             
 
@@ -232,7 +232,6 @@ def bits_print_message_and_quit():
 
 
 def init_main():
-    time()
     date()
     menu_message()
     check_less_mode()
