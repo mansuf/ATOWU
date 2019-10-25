@@ -1,27 +1,247 @@
+# ATOWU in Python
+import os
 from os import system
-from time import sleep
 
-def Background_Windows_Update():
-    print("Turning off Background Windows Update")
-    system('echo off')
-    system('sc config bits start= disabled')
-    system('net stop bits')
-    Windows_Update()
+def on_exit():
+    exit()
 
-def Windows_Update():
-    print("Turning off Windows Update")
-    system('echo off')
-    system('sc config wuauserv start= disabled')
-    system('net stop wuauserv')
-    Delivery_Optimization()
+def time():
+    global y_read_time
+    x = open("time.bat", "w")
+    x.write("@echo off\necho %time% > time.txt")
+    x.close()
+    system('"time.bat"')
+    y = open("time.txt", "r")
+    y_read_time = y.read()
+    y.close()
+    if os.path.exists("time.bat"):
+        os.remove("time.bat")
+    if os.path.exists("time.txt"):
+        os.remove("time.txt")
 
-def Delivery_Optimization():
-    print("Turning Off Delivery Optimization")
-    system('echo off')
-    system('sc config DoSvc start= disabled')
-    system('net stop DoSvc')
-    sleep(2)
+def date():
+    global y_read_date
+    x = open("date.bat", "w")
+    x.write("@echo off\nset DATE_INIT=NOT_FOUND\nfor /f " + '"tokens=2"' + " %%b in ('echo %date%') do set DATE_INIT=%%b\nif %DATE_INIT%==NOT_FOUND for /f " + '"tokens=1"' + " %%b in ('echo %DATE%') do set DATE_INIT=%%b\necho %DATE_INIT% > date.txt")
+    x.close()
+    system('"date.bat"')
+    y = open("date.txt", "r")
+    y_read_date = y.readline()
+    y.close()
+    if os.path.exists("date.bat"):
+        os.remove("date.bat")
+    if os.path.exists("date.txt"):
+        os.remove("date.txt")
 
-Background_Windows_Update()
+
+def menu_message():
+    print("ATOWU Start Date : " + y_read_date.strip())
+    print("[" + y_read_time.strip() + "]" + " " + "[Status:Preparing] Starting ATOWU...")
+
+def check_less_mode():
+    global less_mode
+    if os.path.exists("%temp%\\ATOWU.Less-mode"):
+        os.remove("%temp%\\ATOWU.Less-mode")
+        less_mode = "1"
+        print("[" + y_read_time.strip() + "]" + " " + "[Status:Less Mode Turned On] ATOWU Running in Less Mode")
+    else:
+        less_mode = "0"
+
+def check_debug_mode():
+    global debugmode
+    global debugmessage
+    global debug_dir_log
+    if os.path.exists("%temp%\\ATOWU.DEBUG"):
+        os.remove("%temp%\\ATOWU.DEBUG")
+        debugmode = "1"
+        debugmessage = '"DEBUG_MODE"'
+        debug_dir_log = "[DEBUG]"
+    else:
+        debugmode = "0"
+
+def check_admin():
+    global y_read_check_admin
+    x = open("check_admin.bat", "w")
+    x.write("@echo off\nsc config bits start= disabled>NUL\nif errorlevel 1 goto ERROR\necho SUCCESS > result_check_admin.txt\nexit\n:ERROR\necho FAILED > result_check_admin.txt\nexit")
+    x.close()
+    system('"check_admin.bat"')
+    y = open("result_check_admin.txt", "r")
+    y_read_check_admin = y.read()
+    if y_read_check_admin.strip() == "SUCCESS":
+        print("[" + y_read_time.strip() + "]" + " " + "ATOWU Running as Administrator User")
+    else:
+        print("[" + y_read_time.strip() + "]" + " " + "ATOWU Running as Local User")
+        print("[" + y_read_time.strip() + "]" + " " + "ATOWU is failed to start, maybe not running as Administrator ?")
+        y.close()
+        if os.path.exists("check_admin.bat"):
+            os.remove("check_admin.bat")
+        if os.path.exists("result_check_admin.txt"):
+            os.remove("result_check_admin.txt")
+        on_exit()
+    y.close()
+    if os.path.exists("check_admin.bat"):
+        os.remove("check_admin.bat")
+    if os.path.exists("result_check_admin.txt"):
+        os.remove("result_check_admin.txt")
+    
+def find_OS():
+    global y_read_find_OS
+    x = open("find_os.bat", "w")
+    x.write("@echo off\nfor /f " + '"tokens=3,4,5,6"' " %%b in ('systeminfo ^| findstr Windows') do echo %%b %%c %%d %%e >> %temp%\\ATOWU_WINDOWS_VER.txt\nfor /f " + '"tokens=2"' + " %%b in ('type %temp%\\ATOWU_WINDOWS_VER.txt ^| findstr Microsoft') do set OS_TYPE=%%b" + "\nfor /f " + '"tokens=3"' + " %%b in ('type %temp%\\ATOWU_WINDOWS_VER.txt ^| findstr Microsoft') do set VER_OS=%%b" + "\nfor /f " + '"tokens=4"' + " %%b in ('type %temp%\\ATOWU_WINDOWS_VER.txt ^| findstr Microsoft') do set TYPE_OS=%%b\necho %OS_TYPE% %VER_OS% %TYPE_OS% > result_findOS.txt\nexit")
+    x.close()
+    system('"find_os.bat"')
+    y = open("result_findOS.txt", "r")
+    y_read_find_OS = y.read()
+    y.close()
+    print("[" + y_read_time.strip() + "]" + " " + "[Status:Preparing] ATOWU Running on : " + y_read_find_OS.strip())
+    if os.path.exists("find_os.bat"):
+        os.remove("find_os.bat")
+    if os.path.exists("result_findOS.txt"):
+        os.remove("result_findOS.txt")
+    
+def success_start_messages():
+    print("[" + y_read_time.strip() + "]" + " " + "[Status:Running] SUCCESS!! ATOWU is Running, time start : " + y_read_time.strip())
+    
+def enginev2():
+    # global pid_windows_defend_update
+    # global status_bits
+    # global status_dosvc
+    # global status_wuauserv
+    global x_bits
+    global x_wuauserv
+    global x_dosvc
+    global x_pid_windows_defend_update
+    if less_mode == "1":
+        print("engine_less_mode()")
+    # status_wuauserv = "NOT_FOUND"
+    # status_bits = "NOT_FOUND"
+    # status_dosvc = "NOT_FOUND"
+    x = open("find_bits.bat", "w")
+    x.write("@echo off\nfor /f  " + '"tokens=4"' + " %%b in ('sc query bits ^| findstr STATE') do echo %%b > bits.txt")
+    x.close()
+    system('"find_bits.bat"')
+    x = open("bits.txt", "r")
+    x_bits = x.read()
+    x.close()
+    x = open("find_wuauserv.bat", "w")
+    x.write("@echo off\nfor /f " + '"tokens=4"' + " %%b in ('sc query wuauserv ^| findstr STATE') do echo %%b > wuauserv.txt")
+    x.close()
+    system('"find_wuauserv.bat"')
+    x = open("wuauserv.txt", "r")
+    x_wuauserv = x.read()
+    x.close()
+    x = open("find_dosvc.bat", "w")
+    x.write("@echo off\nfor /f " + '"tokens=4"' + " %%b in ('sc query DoSvc ^| findstr STATE') do echo %%b > dosvc.txt")
+    x.close()
+    system('"find_dosvc.bat"')
+    x = open("dosvc.txt", "r")
+    x_dosvc = x.read()
+    x.close()
+    x = open("pid_windefend.bat", "w")
+    x.write("@echo off\nfor /f " + '"tokens=2"' + " %%b in ('tasklist ^| findstr MpCmdRun.exe') do echo %%b > pid_windefend.txt")
+    x.close()
+    system('"pid_windefend.bat"')
+    if os.path.exists("pid_windefend.txt"):
+        x = open("pid_windefend.txt", "r")
+        x_pid_windows_defend_update = x.read()
+        x.close()
+        os.remove("pid_windefend.txt")
+    else:
+        x_pid_windows_defend_update = "NOT_FOUND"
+    if os.path.exists("find_bits.bat"):
+        os.remove("find_bits.bat")
+    if os.path.exists("bits.txt"):
+        os.remove("bits.txt")
+    if os.path.exists("find_wuauserv.bat"):
+        os.remove("find_wuauserv.bat")
+    if os.path.exists("wuauserv.txt"):
+        os.remove("wuauserv.txt")
+    if os.path.exists("find_dosvc.bat"):
+        os.remove("dosvc.txt")
+    if os.path.exists("pid_windefend.bat"):
+        os.remove("pid_windefend.bat")
+    if os.path.exists("pid_windefend.txt"):
+        os.remove("pid_windefend.txt")
+    bits()
+
+def bits():
+    if x_bits.strip() == "RUNNING":
+        print("[" + y_read_time.strip() + "]" + " " + "[Status:FOUND!!!] [Service] Background Windows Update is Running, trying to shutting down...")
+        system('sc config bits start= disabled>NUL')
+        x = open("off_bits.bat", "w")
+        x.write("@echo off\nfor /f " + '"tokens=7"' + " %%b in ('net stop bits ^| findstr service') do echo %%b > result_off_bits.txt")
+        x.close()
+        system('"off_bits.bat"')
+        if os.path.exists("off_bits.bat"):
+            os.remove("off_bits.bat")
+        x = open("result_off_bits.txt", "r")
+        x_bits_result = x.read()
+        x.close()
+        if os.path.exists("result_off_bits.txt"):
+            os.remove("result_off_bits.txt")
+        if x_bits_result == "Please":
+            print("[" + y_read_time.strip() + "]" + " " + "[Status:QUEUED] [Service] Background Windows Update is Starting or Stopping... ")
+            while 3 > 2:
+                x = open("off_bits.bat", "w")
+                x.write("@echo off\nfor /f " + '"tokens=7"' + " %%b in ('net stop bits ^| findstr service') do echo %%b > result_off_bits.txt")
+                x.close()
+                system('"off_bits.bat"')
+                if os.path.exists("off_bits.bat"):
+                    os.remove("off_bits.bat")
+                x = open("result_off_bits.txt", "r")
+                x_bits_result = x.read()
+                x.close()
+                if x_bits_result == "Please":
+                    x = "Running"
+                else:
+                    bits_check()
+        bits_check()
+    else:
+        print("Background Windows Update is Disabled")
+
+def bits_check():
+    print("[" + y_read_time.strip() + "]" + " " + "[Status:FOUND!!!] [Service] Background Windows Update is Running, trying to shutting down...")
+    system('sc config bits start =disabled>NUL')
+    x = open("off_bits.bat", "w")
+    x.write("@echo off\nfor /f " + '"tokens=7"' + " %%b in ('net stop bits ^| findstr service') do echo %%b > result_off_bits.txt")
+    x.close()
+    system('"off_bits.bat"')
+    if os.path.exists("off_bits.bat"):
+        os.remove("off_bits.bat")
+    x = open("result_off_bits.txt", "r")
+    x_bits_result = x.read()
+    x.close()
+    if os.path.exists("result_off_bits.txt"):
+        os.remove("result_off_bits.txt")
+        bits_print_message_and_quit()
+    else:
+        bits_error_attempt_1()
+        
+
+def bits_error_attempt_1():
+    print("[" + y_read_time.strip() + "]" + " " "[Status:Failed_Shutting_down] [Service] Background Windows Update Failed to Shut Down, trying again... (Attempt:1)")
+
+def bits_print_message_and_quit():
+    print("[" + y_read_time.strip() + "]" + " " + "[Status:Success_Shutting_down] [Service] Background Windows Update Successfully Shut down ")
+            
+            
+
+
+
+
+
+def init_main():
+    time()
+    date()
+    menu_message()
+    check_less_mode()
+    check_debug_mode()
+    check_admin()
+    find_OS()
+    success_start_messages()
+    enginev2()
+
+init_main()
+
 
 
