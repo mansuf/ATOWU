@@ -171,26 +171,42 @@ def bits():
         x = open("result_off_bits.txt", "r")
         x_bits_result = x.read()
         x.close()
-        if os.path.exists("result_off_bits.txt"):
-            os.remove("result_off_bits.txt")
-        if x_bits_result == "Please":
-            x_time = str(datetime.datetime.now().time())
-            print("[" + x_time + "]" + " " + "[Status:QUEUED] [Service] Background Windows Update is Starting or Stopping... ")
-            while 3 > 2:
-                x = open("off_bits.bat", "w")
-                x.write("@echo off\nfor /f " + '"tokens=7"' + " %%b in ('net stop bits ^| findstr service') do echo %%b > result_off_bits.txt")
-                x.close()
-                system('"off_bits.bat"')
-                if os.path.exists("off_bits.bat"):
-                    os.remove("off_bits.bat")
-                x = open("result_off_bits.txt", "r")
-                x_bits_result = x.read()
-                x.close()
-                if x_bits_result == "Please":
-                    x = "Running"
-                else:
-                    bits_check()
-        bits_check()
+        x = open("error_bits.bat", "w")
+        x.write("@ECHO OFF\nfor /f " + '"tokens=3"' + " %%b in ('sc query bits ^| findstr SERVICE_EXIT_CODE') do echo %%b > error_bits.txt")
+        x.close()
+        system('"error_bits.bat"')
+        if os.path.exists("error_bits.bat"):
+            os.remove("error_bits.bat")
+        x = open("error_bits.txt", "r")
+        x_error_read_bits = x.read()
+        x.close()
+        if x_error_read_bits.strip() == "0":
+            if os.path.exists("error_bits.txt"):
+                os.remove("error_bits.txt")
+            if os.path.exists("result_off_bits.txt"):
+                os.remove("result_off_bits.txt")
+            if x_bits_result == "Please":
+                x_time = str(datetime.datetime.now().time())
+                print("[" + x_time + "]" + " " + "[Status:QUEUED] [Service] Background Windows Update is Starting or Stopping... ")
+                while 3 > 2:
+                    x = open("off_bits.bat", "w")
+                    x.write("@echo off\nfor /f " + '"tokens=7"' + " %%b in ('net stop bits ^| findstr service') do echo %%b > result_off_bits.txt")
+                    x.close()
+                    system('"off_bits.bat"')
+                    if os.path.exists("off_bits.bat"):
+                        os.remove("off_bits.bat")
+                    x = open("result_off_bits.txt", "r")
+                    x_bits_result = x.read()
+                    x.close()
+                    if x_bits_result == "Please":
+                        x = "Running"
+                    else:
+                        bits_check()
+            else:
+                bits_check()
+        else:
+            print("[" + x_time + "]" + " " + "[Status:ERROR] [Service] Somethings Wrong, hang on while we rolling back the current action....")
+            enginev2()
     else:
         x_time = str(datetime.datetime.now().time())
         print("[" + x_time + "]" + " " + "Background Windows Update is Disabled")
@@ -213,7 +229,7 @@ def bits_check():
             bits_print_message_and_quit()
     else:
         x_time = str(datetime.datetime.now().time())
-        print("[" + x_time + "]" + " " + "[Status:ERROR] [Service] Somethings Wrong, hang on while we rolling back the current action")
+        print("[" + x_time + "]" + " " + "[Status:ERROR] [Service] Somethings Wrong, hang on while we rolling back the current action....")
         bits_check()
         
 
@@ -224,6 +240,7 @@ def bits_error_attempt_1():
 def bits_print_message_and_quit():
     x_time = str(datetime.datetime.now().time())
     print("[" + x_time + "]" + " " + "[Status:Success_Shutting_down] [Service] Background Windows Update Successfully Shut down ")
+    enginev2()
             
             
 
