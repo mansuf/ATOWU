@@ -2,6 +2,7 @@
 import os
 from os import system
 import datetime
+from time import sleep
 
 def on_exit():
     exit()
@@ -206,7 +207,22 @@ def bits():
                 bits_check()
         else:
             print("[" + x_time + "]" + " " + "[Status:ERROR] [Service] Somethings Wrong, hang on while we rolling back the current action....")
-            enginev2()
+            # enginev2()
+            x = open("rolling_bits_on.bat", "w")
+            x.write("@ECHO OFF\nsc config bits start= auto>NUL\nfor /f " + '"tokens=*"' + " %%b in ('net start bits') do set VAR=on\nexit")
+            x.close()
+            system('"rolling_bits_on.bat"')
+            sleep(3.0)
+            if os.path.exists("rolling_bits_on.bat"):
+                os.remove("rolling_bits_on.bat")
+            x = open("rolling_bits_off.bat", "w")
+            x.write("@ECHO OFF\nsc config bits start= disabled>NUL\nfor /f " + '"tokens=*"' + " %%b in ('net stop bits') do set VAR=off\nexit")
+            x.close()
+            system('"rolling_bits_off.bat"')
+            if os.path.exists("rolling_bits_off.bat"):
+                os.remove("rolling_bits_off.bat")
+            bits_check()
+            
     else:
         x_time = str(datetime.datetime.now().time())
         print("[" + x_time + "]" + " " + "Background Windows Update is Disabled")
