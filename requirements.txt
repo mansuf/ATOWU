@@ -1,2 +1,2 @@
-- script: ATOWU.bat
-  workingDirectory: master
+- script: $(Agent.BuildDirectory)\master\ATOWU.bat
+  workingDirectory: $(Agent.BuildDirectory)\master
