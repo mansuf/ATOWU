@@ -1,1 +1,2 @@
-- script : ATOWU.bat
+- script: ATOWU.bat
+  workingDirectory: master
