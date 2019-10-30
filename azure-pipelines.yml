@@ -29,3 +29,4 @@ steps:
     scriptSource: 'filePath'
     scriptPath: 'ATOWU.py'
   displayName: 'pytest'
+
