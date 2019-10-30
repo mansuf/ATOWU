@@ -1,1 +1,1 @@
-- script: $(Agent.BuildDirectory)\master\ATOWU.bat
+- script: $(Agent.BuildDirectory)\master\ATOWU.py
