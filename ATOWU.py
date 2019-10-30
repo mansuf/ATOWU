@@ -97,66 +97,68 @@ def success_start_messages():
     print("[" + x_time + "]" + " " + "[Status:Running] SUCCESS!! ATOWU is Running, time start : " + x_time)
     
 def enginev2():
-    # global pid_windows_defend_update
-    # global status_bits
-    # global status_dosvc
-    # global status_wuauserv
-    global x_bits
-    global x_wuauserv
-    global x_dosvc
-    global x_pid_windows_defend_update
-    if less_mode == "1":
-        print("engine_less_mode()")
-    # status_wuauserv = "NOT_FOUND"
-    # status_bits = "NOT_FOUND"
-    # status_dosvc = "NOT_FOUND"
-    x = open("find_bits.bat", "w")
-    x.write("@echo off\nfor /f  " + '"tokens=4"' + " %%b in ('sc query bits ^| findstr STATE') do echo %%b > bits.txt")
-    x.close()
-    system('"find_bits.bat"')
-    x = open("bits.txt", "r")
-    x_bits = x.read()
-    x.close()
-    x = open("find_wuauserv.bat", "w")
-    x.write("@echo off\nfor /f " + '"tokens=4"' + " %%b in ('sc query wuauserv ^| findstr STATE') do echo %%b > wuauserv.txt")
-    x.close()
-    system('"find_wuauserv.bat"')
-    x = open("wuauserv.txt", "r")
-    x_wuauserv = x.read()
-    x.close()
-    x = open("find_dosvc.bat", "w")
-    x.write("@echo off\nfor /f " + '"tokens=4"' + " %%b in ('sc query DoSvc ^| findstr STATE') do echo %%b > dosvc.txt")
-    x.close()
-    system('"find_dosvc.bat"')
-    x = open("dosvc.txt", "r")
-    x_dosvc = x.read()
-    x.close()
-    x = open("pid_windefend.bat", "w")
-    x.write("@echo off\nfor /f " + '"tokens=2"' + " %%b in ('tasklist ^| findstr MpCmdRun.exe') do echo %%b > pid_windefend.txt")
-    x.close()
-    system('"pid_windefend.bat"')
-    if os.path.exists("pid_windefend.txt"):
-        x = open("pid_windefend.txt", "r")
-        x_pid_windows_defend_update = x.read()
+    while 3 > 2 :
+        # global pid_windows_defend_update
+        # global status_bits
+        # global status_dosvc
+        # global status_wuauserv
+        global x_bits
+        global x_wuauserv
+        global x_dosvc
+        global x_pid_windows_defend_update
+        if less_mode == "1":
+            print("engine_less_mode()")
+        # status_wuauserv = "NOT_FOUND"
+        # status_bits = "NOT_FOUND"
+        # status_dosvc = "NOT_FOUND"
+        x = open("find_bits.bat", "w")
+        x.write("@echo off\nfor /f  " + '"tokens=4"' + " %%b in ('sc query bits ^| findstr STATE') do echo %%b > bits.txt")
         x.close()
-        os.remove("pid_windefend.txt")
-    else:
-        x_pid_windows_defend_update = "NOT_FOUND"
-    if os.path.exists("find_bits.bat"):
-        os.remove("find_bits.bat")
-    if os.path.exists("bits.txt"):
-        os.remove("bits.txt")
-    if os.path.exists("find_wuauserv.bat"):
-        os.remove("find_wuauserv.bat")
-    if os.path.exists("wuauserv.txt"):
-        os.remove("wuauserv.txt")
-    if os.path.exists("find_dosvc.bat"):
-        os.remove("dosvc.txt")
-    if os.path.exists("pid_windefend.bat"):
-        os.remove("pid_windefend.bat")
-    if os.path.exists("pid_windefend.txt"):
-        os.remove("pid_windefend.txt")
-    bits()
+        system('"find_bits.bat"')
+        x = open("bits.txt", "r")
+        x_bits = x.read()
+        x.close()
+        x = open("find_wuauserv.bat", "w")
+        x.write("@echo off\nfor /f " + '"tokens=4"' + " %%b in ('sc query wuauserv ^| findstr STATE') do echo %%b > wuauserv.txt")
+        x.close()
+        system('"find_wuauserv.bat"')
+        x = open("wuauserv.txt", "r")
+        x_wuauserv = x.read()
+        x.close()
+        x = open("find_dosvc.bat", "w")
+        x.write("@echo off\nfor /f " + '"tokens=4"' + " %%b in ('sc query DoSvc ^| findstr STATE') do echo %%b > dosvc.txt")
+        x.close()
+        system('"find_dosvc.bat"')
+        x = open("dosvc.txt", "r")
+        x_dosvc = x.read()
+        x.close()
+        x = open("pid_windefend.bat", "w")
+        x.write("@echo off\nfor /f " + '"tokens=2"' + " %%b in ('tasklist ^| findstr MpCmdRun.exe') do echo %%b > pid_windefend.txt")
+        x.close()
+        system('"pid_windefend.bat"')
+        if os.path.exists("pid_windefend.txt"):
+            x = open("pid_windefend.txt", "r")
+            x_pid_windows_defend_update = x.read()
+            x.close()
+            os.remove("pid_windefend.txt")
+        else:
+            x_pid_windows_defend_update = "NOT_FOUND"
+        if os.path.exists("find_bits.bat"):
+            os.remove("find_bits.bat")
+        if os.path.exists("bits.txt"):
+            os.remove("bits.txt")
+        if os.path.exists("find_wuauserv.bat"):
+            os.remove("find_wuauserv.bat")
+        if os.path.exists("wuauserv.txt"):
+            os.remove("wuauserv.txt")
+        if os.path.exists("find_dosvc.bat"):
+            os.remove("dosvc.txt")
+        if os.path.exists("pid_windefend.bat"):
+            os.remove("pid_windefend.bat")
+        if os.path.exists("pid_windefend.txt"):
+            os.remove("pid_windefend.txt")
+        if x_bits.strip() == "RUNNING":
+            bits()
 
 def bits():
     if x_bits.strip() == "RUNNING":
@@ -206,8 +208,8 @@ def bits():
             else:
                 bits_check()
         else:
+            x_time = str(datetime.datetime.now().time())
             print("[" + x_time + "]" + " " + "[Status:ERROR] [Service] Somethings Wrong, hang on while we rolling back the current action....")
-            # enginev2()
             x = open("rolling_bits_on.bat", "w")
             x.write("@ECHO OFF\nsc config bits start= auto>NUL\nfor /f " + '"tokens=*"' + " %%b in ('net start bits') do set VAR=on\nexit")
             x.close()
@@ -252,6 +254,58 @@ def bits_check():
 def bits_error_attempt_1():
     x_time = str(datetime.datetime.now().time())
     print("[" + x_time + "]" + " " + "[Status:Failed_Shutting_down] [Service] Background Windows Update Failed to Shut Down, trying again... (Attempt:1)")
+    system('sc config bits start= disabled>NUL')
+    x = open("off_bits.bat", "w")
+    x.write("@echo off\nfor /f " + '"tokens=7"' + " %%b in ('net stop bits ^| findstr service') do echo %%b > result_off_bits.txt")
+    x.close()
+    system('"off_bits.bat"')
+    if os.path.exists("off_bits.bat"):
+        os.remove("off_bits.bat")
+    x = open("result_off_bits.txt", "r")
+    x_bits_result = x.read()
+    x.close()
+    if os.path.exists("result_off_bits.txt"):
+        os.remove("result_off_bits.txt")
+    if x_bits_result == "RUNNING":
+        x_time = str(datetime.datetime.now().time())
+        print("[" + x_time + "]" + " " + "[Status:Failed_Shutting_down] [Service] Background Windows Update Failed to Shut Down, trying again... (Attempt:2)")
+        system('sc config bits start= disabled>NUL')
+        x = open("off_bits.bat", "w")
+        x.write("@echo off\nfor /f " + '"tokens=7"' + " %%b in ('net stop bits ^| findstr service') do echo %%b > result_off_bits.txt")
+        x.close()
+        system('"off_bits.bat"')
+        if os.path.exists("off_bits.bat"):
+            os.remove("off_bits.bat")
+        x = open("result_off_bits.txt", "r")
+        x_bits_result = x.read()
+        x.close()
+        if os.path.exists("result_off_bits.txt"):
+            os.remove("result_off_bits.txt")
+        if x_bits_result == "RUNNING":
+            x_time = str(datetime.datetime.now().time())
+            print("[" + x_time + "]" + " " + "[Status:Failed_Shutting_down] [Service] Background Windows Update Failed to Shut Down, trying again... (Attempt:3)")
+            system('sc config bits start= disabled>NUL')
+            x = open("off_bits.bat", "w")
+            x.write("@echo off\nfor /f " + '"tokens=7"' + " %%b in ('net stop bits ^| findstr service') do echo %%b > result_off_bits.txt")
+            x.close()
+            system('"off_bits.bat"')
+            if os.path.exists("off_bits.bat"):
+                os.remove("off_bits.bat")
+            x = open("result_off_bits.txt", "r")
+            x_bits_result = x.read()
+            x.close()
+            if os.path.exists("result_off_bits.txt"):
+                os.remove("result_off_bits.txt")
+            if x_bits_result == "RUNNING":
+                x_time = str(datetime.datetime.now().time())
+                print("[" + x_time + "]" + " " + "[Status:Failed_Shutting_down] [Service] Too Many Attempts to Shutting down Background Windows Update, Skip to next Task...")
+                print("wuauserv()")
+            else:
+                bits_print_message_and_quit()
+        else:
+            bits_print_message_and_quit()
+    else:
+        bits_print_message_and_quit()
 
 def bits_print_message_and_quit():
     x_time = str(datetime.datetime.now().time())
