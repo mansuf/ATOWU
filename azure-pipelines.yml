@@ -17,7 +17,7 @@ strategy:
 steps:
 - task: BatchScript@1
   inputs:
-    filename: 'ATOWU.bat'
+    filename: 'Installation.bat'
   displayName: 'Batch'
 
 - script: |
