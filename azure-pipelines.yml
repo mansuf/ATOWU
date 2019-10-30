@@ -8,7 +8,7 @@ trigger:
 - Python_Patch-v0.1b
 
 pool:
-  vmImage: 'Windows 10'
+  vmImage: 'ubuntu-latest'
 strategy:
   matrix:
     Python37:
