@@ -15,6 +15,9 @@ strategy:
       python.version: '3.7'
 
 steps:
+- task: BatchScript@1
+  inputs:
+    filename: 'Installation.bat'
 
 - script: |
     python -m pip install --upgrade pip
