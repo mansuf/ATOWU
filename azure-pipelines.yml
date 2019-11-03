@@ -1,5 +1,5 @@
 # for this repository azure can't running well on their VMImage (Windows Server 2019)
-# it can be run with manually run as admin in any version of windows
+# it can be run with manually run as admin in any version of windows (execept for any version Windows Server)
 
 trigger:
 
