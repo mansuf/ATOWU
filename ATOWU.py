@@ -159,6 +159,8 @@ def enginev2():
             os.remove("pid_windefend.txt")
         if x_bits.strip() == "RUNNING":
             bits()
+        if x_wuauserv.strip() == "RUNNING":
+            wuauserv.check_service(self)
 
 def bits():
     if x_bits.strip() == "RUNNING":
@@ -311,14 +313,32 @@ def bits_print_message_and_quit():
     x_time = str(datetime.datetime.now().time())
     print("[" + x_time + "]" + " " + "[Status:Success_Shutting_down] [Service] Background Windows Update Successfully Shut down ")
     enginev2()
+
+class wuauserv():
+    def check_service(self):
+        if x_wuauserv.strip() == "RUNNING":
+            wuauserv.process_service(self)
+        else:
+            x_time = str(datetime.datetime.now().time())
+            print("[" + x_time + "]" + " " + "Windows Update is Disabled")
+            enginev2()
+
+    
+    def process_service(self):
+            x_time = str(datetime.datetime.now().time())
+            print("[" + x_time + "]" + " " + "[Status:FOUND!!!] [Service] Windows Update is Running, trying to shutting down....")
+            system('sc config wuauserv start= disabled>NUL')
+            x = open("off_wuauserv.bat", "w")
+            x.write("@echo off\nfor /f " + '"tokens=7"' + " %%b in ('net stop wuauserv ^| findstr service') do echo %%b > result_off_wuauserv.txt\nexit")
+            x.close()
+            system('"off_wuauserv.bat"')
+            if os.path.exists("off_wuauserv.bat"):
+                os.remove("off_wuauserv.bat")
             
-            
-
-
-
-
 
 def init_main():
+    global self
+    self = ""
     date()
     menu_message()
     check_less_mode()
