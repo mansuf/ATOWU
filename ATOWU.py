@@ -334,7 +334,75 @@ class wuauserv():
             system('"off_wuauserv.bat"')
             if os.path.exists("off_wuauserv.bat"):
                 os.remove("off_wuauserv.bat")
-            
+            x = open("result_off_wuauserv.txt", "r")
+            x_wuauserv_result = x.read()
+            x.close()
+            x = open("error_wuauserv.bat", "w")
+            x.write("@echo off\nfor /f \"tokens=3\" %%b in (\'sc query bits ^| findstr SERVICE_EXIT_CODE\') do echo %%b > error_wuauserv.txt")
+            x.close()
+            system('"error_wuauserv.bat"')   
+            if os.path.exists("error_wuauserv.bat"):
+                os.remove("error_wuauserv.bat")
+            x = open("error_wuauserv.txt", "r")
+            x_error_read_wuauserv = x.read()
+            x.close()
+            if x_error_read_wuauserv.strip() == "0":
+                if os.path.exists("error_wuauserv.txt"):
+                    os.remove("error_wuauser.txt")
+                if os.path.exists("result_off_wuauserv.txt"):
+                    os.remove("result_off_wuauserv.txt")
+                if x_wuauserv_result == "Please":
+                    x_time = str(datetime.datetime.now().time())
+                    print("[" + x_time + "]" + " " + "[Status:QUEUED] [Service] Windows Update is Starting or Stopping... ")
+                    while 3 > 2:
+                        x = open("off_wuauserv.bat", "w")
+                        x.write("@echo off\nfor /f \"tokens=7\" %%b in ('net stop wuauserv ^| findstr service') do echo %%b > result_off_wuauserv.txt")
+                        x.close()
+                        system('"off_wuauserv.bat"')
+                        if os.path.exists("off_wuauserv.bat"):
+                            os.remove("off_wuauserv.bat")
+                        x = open("result_off_wuauserv.txt", "r")
+                        x_wuauserv_result = x.read()
+                        x.close()
+                        if x_wuauserv_result == "Please":
+                            x = "Running"
+                        else:
+                            wuauserv.check_state(self)
+                else:
+                    wuauserv.check_state(self)
+            else:
+                x_time = str(datetime.datetime.now().time())
+                print("[" + x_time + "]" + " " + "[Status:ERROR] [Service] Somethings Wrong, hang on while we rolling back the current action....")
+
+    def check_state(self):
+        x = open("check_wuauserv.bat", "w")
+        x.write("@echo off\n for /f \"tokens=4\" %%b in ('sc query wuauserv ^| findstr STATE') do echo %%b > result_check_wuauserv.txt\nexit")
+        x.close()
+        system('"check_wuauserv.bat"')
+        if os.path.exists("check_wuauserv.bat"):
+            os.remove('check_wuauserv.bat')
+        if os.path.exists('result_check_wuauserv.txt'):
+            x = open('result_check_wuauserv.txt', 'r')
+            x_check_result = x.read()
+            x.close()
+            if x_check_result == "RUNNING":
+                wuauserv.error(self)
+            else:
+                wuauserv.print_message_and_quit(self)
+        else:
+            x_time = str(datetime.datetime.now().time())
+            print("[" + x_time + "]" + " " + "[Status:ERROR] [Service] Somethings Wrong, hang on while we rolling back the current action....")
+            wuauserv.check_state(self)
+
+    def error(self):
+        x_time = str(datetime.datetime.now().time())
+        print("[" + x_time + "]" + " " + "[Status:Failed_Shutting_down] [Service] Windows Update Failed to Shut Down, trying again.... (Attempt:1)")
+
+    def print_message_and_quit(self):
+        x_time = str(datetime.datetime.now().time())
+        print("[" + x_time + "]" + " " + "[Status:Success_Shutting_down] [Service] Windows Update Successfully Shut down ")
+        enginev2()
+
 
 def init_main():
     global self
